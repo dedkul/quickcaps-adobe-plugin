@@ -8,7 +8,7 @@
 <link rel="icon" href="favicon.png" />
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-<link href="https://fonts.googleapis.com/css2?family=Hind:wght@400;500;600&family=Rozha+One&display=swap" rel="stylesheet" />
+<link href="https://fonts.googleapis.com/css2?family=Anek+Devanagari:wdth,wght@75..125,400..800&display=swap" rel="stylesheet" />
 <!--
   A 26-second loop for screen recording (Twitter/X, 16:9). Designed on a
   fixed 1920x1080 stage, scaled to fit the window. Every frame is computed
@@ -18,8 +18,9 @@
 -->
 <style>
   :root {
-    --paper: #eeebf7; --ink: #1c1533; --ink-2: #4a4366; --frame: #15102a;
-    --caption: #ffd23f; --track: #6a4be8; --track-2: #8f78f0;
+    /* Same tokens as the website (docs/style.css). */
+    --bg: #16131c; --bg-2: #1f1b27; --line: #352f40; --text: #f3efe6; --muted: #aaa3b9;
+    --caption: #ffd23f; --violet: #a796ff; --clip: #4b3f86;
     --ui: #232323; --ui-2: #2b2b2b; --ui-3: #333; --ui-line: #3a3a3a; --ui-text: #e4e4e4; --ui-dim: #9a9a9a;
     --accent: #4b8ff0; --ok: #46b886;
   }
@@ -28,36 +29,41 @@
   #fit { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; }
   #stage {
     position: relative; width: 1920px; height: 1080px; flex: none;
-    background: var(--paper); overflow: hidden; transform-origin: center center;
-    font-family: "Hind", system-ui, sans-serif; color: var(--ink);
+    background: var(--bg); overflow: hidden; transform-origin: center center;
+    font-family: "Anek Devanagari", system-ui, sans-serif; color: var(--text);
   }
   .layer { position: absolute; inset: 0; }
 
   /* ---------- Title + end cards ---------- */
   .card { display: flex; flex-direction: column; justify-content: center; padding: 0 180px; }
-  .card h1 { font-family: "Rozha One", serif; font-weight: 400; font-size: 132px; line-height: 1.04; }
-  .bar { height: 12px; background: var(--ink); width: 0; margin-bottom: 34px; }
-  .card p { margin-top: 34px; font-size: 44px; color: var(--ink-2); }
-  .logo { display: flex; align-items: center; gap: 22px; font-family: "Rozha One", serif; font-size: 64px; margin-bottom: 40px; }
+  .card h1 { font-weight: 800; font-stretch: 112%; font-size: 132px; line-height: 1.02; letter-spacing: -0.01em; }
+  .bar { height: 12px; border-radius: 6px; background: var(--caption); width: 0; margin-bottom: 40px; }
+  .card p { margin-top: 34px; font-size: 46px; color: var(--muted); }
+  .logo { display: flex; align-items: center; gap: 22px; font-weight: 800; font-stretch: 112%; font-size: 64px; margin-bottom: 40px; }
   .mark { width: 76px; height: 58px; border-radius: 13px; background: #3f8ae0; position: relative; flex: none; }
   .mark i { position: absolute; top: 33px; height: 8px; border-radius: 4px; background: #fff; }
   .title-cap { margin-top: 56px; opacity: 0; }
-  .title-cap span { background: #000; color: var(--caption); font-weight: 600; font-size: 52px; padding: 6px 22px; }
-  .url { margin-top: 48px; font-size: 40px; font-weight: 600; color: var(--track); }
+  .title-cap, .m-cap { font-weight: 800; color: #fff; text-shadow: 0 3px 0 #000, 0 0 16px rgba(0,0,0,.85); -webkit-text-stroke: 1.5px rgba(0,0,0,.6); }
+  .title-cap { font-size: 64px; }
+  .title-cap .now, .m-cap .now { color: var(--caption); }
+  .url { margin-top: 48px; font-size: 42px; font-weight: 700; color: var(--caption); }
 
   /* ---------- Premiere window ---------- */
-  #win { position: absolute; left: 70px; top: 60px; width: 1780px; height: 960px; border-radius: 16px; background: #1a1a1a; box-shadow: 0 30px 80px rgba(28,21,51,.35); overflow: hidden; }
+  #win { position: absolute; left: 70px; top: 60px; width: 1780px; height: 960px; border-radius: 16px; background: #1a1a1a; border: 1px solid var(--line); box-shadow: 0 30px 90px rgba(0,0,0,.55); overflow: hidden; }
   .titlebar { height: 40px; display: flex; align-items: center; gap: 9px; padding: 0 16px; background: #262626; color: var(--ui-dim); font-size: 17px; }
   .titlebar b { width: 13px; height: 13px; border-radius: 50%; background: #444; }
   .titlebar span { margin-left: 14px; }
 
-  #monitor { position: absolute; left: 24px; top: 64px; width: 1216px; height: 684px; background: var(--frame); border-radius: 6px; overflow: hidden; }
-  .scene i { position: absolute; display: block; }
-  .m-tc { position: absolute; right: 22px; top: 16px; font-size: 20px; color: #8d86a8; font-variant-numeric: tabular-nums; }
-  .m-label { position: absolute; left: 22px; top: 16px; font-size: 20px; color: #8d86a8; }
-  .m-script { position: absolute; left: 22px; bottom: 22px; font-size: 22px; font-weight: 600; color: var(--frame); background: var(--caption); padding: 4px 14px 2px; border-radius: 6px; opacity: 0; }
-  .m-cap { position: absolute; left: 0; right: 0; bottom: 70px; text-align: center; opacity: 0; }
-  .m-cap span { background: #000; color: var(--caption); font-weight: 600; font-size: 48px; line-height: 1.45; padding: 4px 18px; -webkit-box-decoration-break: clone; box-decoration-break: clone; }
+  #monitor { position: absolute; left: 24px; top: 64px; width: 1216px; height: 684px; border-radius: 6px; overflow: hidden;
+    /* A dim room: a warm lamp left, a cool window right (as on the site). */
+    background:
+      radial-gradient(60% 80% at 18% 30%, rgba(255,170,90,.22), transparent 70%),
+      radial-gradient(50% 70% at 85% 25%, rgba(120,110,255,.20), transparent 70%),
+      linear-gradient(180deg, #221c2c, #0f0c14); }
+  .m-tc { position: absolute; right: 22px; top: 16px; font-size: 20px; color: #9c95ad; font-variant-numeric: tabular-nums; }
+  .m-label { position: absolute; left: 22px; top: 16px; font-size: 20px; color: #9c95ad; }
+  .m-script { position: absolute; left: 22px; bottom: 22px; font-size: 22px; font-weight: 700; color: #17130a; background: var(--caption); padding: 4px 14px 2px; border-radius: 6px; opacity: 0; }
+  .m-cap { position: absolute; left: 60px; right: 60px; bottom: 74px; text-align: center; opacity: 0; font-size: 58px; line-height: 1.2; }
 
   #timeline { position: absolute; left: 24px; top: 770px; width: 1216px; height: 166px; background: var(--ui); border-radius: 6px; padding: 14px 16px; }
   .row { display: flex; align-items: center; height: 42px; margin-bottom: 8px; }
@@ -66,10 +72,10 @@
   .clip { position: absolute; top: 3px; bottom: 3px; left: 0; right: 0; border-radius: 4px; padding: 5px 10px; font-size: 16px; color: #fff; }
   .v1 { background: #4a6fa5; }
   .a1 { background: #2f7a5a repeating-linear-gradient(90deg, #5fb48e 0 2px, transparent 2px 6px) center / 100% 55% no-repeat; }
-  .cblock { position: absolute; top: 3px; bottom: 3px; border-radius: 4px; background: var(--track-2); color: #fff; font-size: 15px; padding: 6px 9px; white-space: nowrap; overflow: hidden; opacity: 0; }
-  .cblock.on { background: var(--track); }
+  .cblock { position: absolute; top: 3px; bottom: 3px; border-radius: 4px; background: var(--clip); color: #fff; font-size: 15px; padding: 6px 9px; white-space: nowrap; overflow: hidden; opacity: 0; }
+  .cblock.on { background: var(--violet); color: #17130a; }
   .inout { position: absolute; top: 0; bottom: 0; background: rgba(255,255,255,.07); border-left: 2px solid #c9c9c9; border-right: 2px solid #c9c9c9; }
-  #playhead { position: absolute; top: 6px; bottom: 6px; width: 3px; background: #4b8ff0; left: 68px; }
+  #playhead { position: absolute; top: 6px; bottom: 6px; width: 3px; background: var(--caption); left: 68px; }
 
   /* ---------- QuickCaps panel (scaled-up replica of the real one) ---------- */
   #panel { position: absolute; left: 1262px; top: 64px; width: 494px; height: 872px; background: #1e1e1e; border-radius: 8px; border: 1px solid #333; display: flex; flex-direction: column; overflow: hidden; color: var(--ui-text); }
@@ -117,7 +123,7 @@
 
   /* ---------- Cursor + click ring ---------- */
   #cursor { position: absolute; left: 0; top: 0; width: 34px; height: 34px; opacity: 0; z-index: 10; }
-  .ring { position: absolute; width: 60px; height: 60px; margin: -30px 0 0 -30px; border-radius: 50%; border: 4px solid var(--track); opacity: 0; z-index: 9; }
+  .ring { position: absolute; width: 60px; height: 60px; margin: -30px 0 0 -30px; border-radius: 50%; border: 4px solid var(--caption); opacity: 0; z-index: 9; }
 
   #hint { position: fixed; left: 16px; bottom: 14px; font: 13px system-ui; color: #888; }
 </style>
@@ -130,7 +136,7 @@
     <div class="bar" id="title-bar"></div>
     <h1>Hindi captions<br />in Premiere Pro.</h1>
     <p>In one click, timed to the speech.</p>
-    <div class="title-cap" id="title-cap"><span>नमस्ते दोस्तों, आज हम बात करेंगे</span></div>
+    <div class="title-cap" id="title-cap" lang="hi"><span class="now">नमस्ते</span> दोस्तों, आज हम बात करेंगे</div>
   </div>
 
   <!-- Premiere -->
@@ -139,15 +145,10 @@
       <div class="titlebar"><b></b><b></b><b></b><span>Adobe Premiere Pro · Vlog_final</span></div>
 
       <div id="monitor">
-        <div class="scene">
-          <i style="left:9%;top:14%;width:22%;height:46%;border-radius:6px;background:#1f1840"></i>
-          <i style="left:55%;top:20%;width:15%;aspect-ratio:1;border-radius:50%;background:#2b2252"></i>
-          <i style="left:44%;top:48%;width:37%;height:62%;border-radius:48% 48% 0 0;background:#261e4a"></i>
-        </div>
         <div class="m-label">Program: Vlog_final</div>
         <div class="m-tc" id="m-tc">00:00:12:00</div>
         <div class="m-script" id="m-script">हिंदी</div>
-        <div class="m-cap" id="m-cap"><span id="m-cap-text"></span></div>
+        <div class="m-cap" id="m-cap"></div>
       </div>
 
       <div id="timeline">
@@ -220,7 +221,7 @@
     <div class="url" id="url"></div>
   </div>
 
-  <svg id="cursor" viewBox="0 0 24 24"><path d="M3 2 L3 19 L7.5 14.8 L10.4 21.4 L13.4 20.1 L10.6 13.7 L16.8 13.7 Z" fill="#fff" stroke="#1c1533" stroke-width="1.4" stroke-linejoin="round" /></svg>
+  <svg id="cursor" viewBox="0 0 24 24"><path d="M3 2 L3 19 L7.5 14.8 L10.4 21.4 L13.4 20.1 L10.6 13.7 L16.8 13.7 Z" fill="#fff" stroke="#16131c" stroke-width="1.4" stroke-linejoin="round" /></svg>
   <div class="ring" id="ring"></div>
 </div></div>
 <div id="hint">Space pause · R restart · H hide this</div>
@@ -273,6 +274,23 @@
   const SPANS = [[0.14, 0.38], [0.385, 0.565], [0.57, 0.86]];
   const blocks = Array.from(document.querySelectorAll(".cblock"));
   const laneEl = $("lane-c");
+
+  // ---------- caption on the monitor, word by word ----------
+  let capText = null, capWords = [];
+  function setCap(text, k) {
+    if (text !== capText) {
+      capText = text;
+      $("m-cap").textContent = "";
+      capWords = text.split(" ").map((w, i) => {
+        const el = document.createElement("span");
+        el.textContent = (i ? " " : "") + w;
+        $("m-cap").appendChild(el);
+        return el;
+      });
+    }
+    const lit = Math.min(capWords.length - 1, Math.floor(k * capWords.length));
+    capWords.forEach((el, i) => el.classList.toggle("now", i === lit));
+  }
 
   // ---------- one frame ----------
   function render(t) {
@@ -327,7 +345,11 @@
     blocks.forEach((b, i) => b.classList.toggle("on", playing && i === idx));
     const capShown = playing && idx >= 0;
     $("m-cap").style.opacity = capShown ? 1 : 0;
-    if (capShown) $("m-cap-text").textContent = scriptNow === "hi" ? LINES.hi[idx] : LINES[scriptNow][0];
+    if (capShown) {
+      // During the script switch the playhead holds, so the words follow the clock instead.
+      const k = t < 16.5 ? seg(f, SPANS[idx][0], SPANS[idx][1]) : ((t - 16.5) % 1.25) / 1.25;
+      setCap(scriptNow === "hi" ? LINES.hi[idx] : LINES[scriptNow][0], k);
+    }
     $("m-script").style.opacity = t >= 16.5 && t < 21.5 ? 1 : 0;
     $("m-script").textContent = SCRIPT_LABEL[scriptNow];
     const frames = Math.floor(f * 30 * 25);

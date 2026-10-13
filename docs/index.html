@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>QuickCaps: Hindi and Hinglish captions for Premiere Pro</title>
+<meta name="description" content="A free Premiere Pro plugin for desi creators. Hindi, Hinglish, or English captions from your timeline, timed to the speech. Powered by Sarvam AI." />
+<meta property="og:title" content="QuickCaps: Hindi captions inside Premiere Pro" />
+<meta property="og:description" content="Free Premiere Pro plugin. Hindi, Hinglish, Mixed, or English captions, timed to your sequence. No subscription." />
+<meta property="og:url" content="https://dedkul.github.io/quickcaps-adobe-plugin/" />
+<meta name="twitter:card" content="summary" />
+<link rel="icon" href="favicon.png" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Anek+Devanagari:wdth,wght@75..125,400..800&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+<header class="top wrap">
+  <a class="brand" href="#"><img src="favicon.png" alt="" width="26" height="26" />QuickCaps</a>
+  <nav class="top-nav" aria-label="Page">
+    <a href="#how">How it works</a>
+    <a href="#price">Price</a>
+    <a href="#faq">Questions</a>
+    <a href="https://github.com/dedkul/quickcaps-adobe-plugin">GitHub</a>
+    <a class="btn btn-small" href="#download">Download</a>
+  </nav>
+</header>
+
+<main>
+  <section class="hero wrap">
+    <div class="hero-copy">
+      <h1>Captions for desi creators, right inside Premiere&nbsp;Pro.</h1>
+      <p class="lede">Pick your audio, click Generate, and get Hindi, Hinglish, or English captions timed to the speech. Fix anything, then add them to your timeline.</p>
+      <div class="cta-row">
+        <a class="btn" href="#download">Download free</a>
+        <a class="btn btn-ghost" href="#how">See how it works</a>
+      </div>
+      <p class="fine">Works with Premiere Pro 2022 and newer, on Mac and Windows. No subscription: you pay Sarvam AI about ₹5 for a 10-minute video.</p>
+    </div>
+
+    <figure class="stage" aria-label="Example: the same line captioned in four scripts">
+      <div class="monitor">
+        <div class="monitor-bar"><span>Program: Vlog_final</span><span id="tc">00:00:12:00</span></div>
+        <div class="monitor-cap"><p id="cap" lang="hi"></p></div>
+      </div>
+      <div class="timeline" aria-hidden="true">
+        <div class="track track-c">
+          <span class="clip" style="left:1%;width:31%"></span>
+          <span class="clip" style="left:33%;width:25%"></span>
+          <span class="clip" style="left:59%;width:40%"></span>
+        </div>
+        <div class="track track-a"></div>
+        <div class="playhead" id="playhead"></div>
+      </div>
+      <div class="scripts" role="tablist" aria-label="Caption script">
+        <button role="tab" data-s="hi" aria-selected="true">हिंदी</button>
+        <button role="tab" data-s="rom" aria-selected="false">Hinglish</button>
+        <button role="tab" data-s="mix" aria-selected="false">Mixed</button>
+        <button role="tab" data-s="en" aria-selected="false">English</button>
+      </div>
+      <figcaption id="script-note">Devanagari, straight from the speech.</figcaption>
+    </figure>
+  </section>
+
+  <section id="how" class="wrap section how">
+    <div class="how-copy">
+      <h2>No typing. Three steps.</h2>
+      <ol class="steps">
+        <li>
+          <h3>Pick the audio</h3>
+          <p>The whole sequence, your In to Out range, or just the clips you've selected.</p>
+        </li>
+        <li>
+          <h3>Choose how it's written</h3>
+          <p>हिंदी, Hinglish, Mixed, or English, at a pace that suits Reels or YouTube. Then click Generate.</p>
+        </li>
+        <li>
+          <h3>Fix and add</h3>
+          <p>Edit any line, fix a name everywhere with find and replace, and add the captions at the right timecode.</p>
+        </li>
+      </ol>
+    </div>
+    <div class="shots">
+      <img src="img/panel-main.png" width="380" height="700" alt="The QuickCaps panel: caption source, script, and pacing options with a cost estimate above the Generate button." />
+      <img src="img/panel-review.png" width="380" height="700" alt="The review screen: timed Hindi captions with find and replace." />
+    </div>
+  </section>
+
+  <section class="wrap section">
+    <h2>Made for the way we actually talk</h2>
+    <dl class="features">
+      <div><dt>Hinglish that reads right</dt><dd>Roman letters the way people type them, or Mixed, where English words stay English: "मेरा phone number है".</dd></div>
+      <div><dt>Your names, spelled your way</dt><dd>Add your name, channel, and slang once. Sarvam listens for them every time.</dd></div>
+      <div><dt>Lands on the right timecode</dt><dd>Caption an In-to-Out range and the captions sit exactly between your marks.</dd></div>
+      <div><dt>Reels or long-form</dt><dd>Short punchy lines for Reels, calmer ones for YouTube, or set your own.</dd></div>
+      <div><dt>Clean-up switches</dt><dd>Drop umm and uh, bleep the gaalis, or go Reels style with no full stops.</dd></div>
+      <div><dt>Hindi and English together</dt><dd>Two caption tracks from one click, so viewers can choose a language.</dd></div>
+    </dl>
+  </section>
+
+  <section id="price" class="wrap section price">
+    <div>
+      <h2>The plugin is free. The AI costs paise.</h2>
+      <p class="sub">No monthly plan and no minutes that expire. QuickCaps uses your own Sarvam AI account, billed by the second at ₹30 per hour of audio. The panel shows the estimate before you click Generate.</p>
+      <p class="fine">New Sarvam accounts get ₹100 of free credit, about three hours of captions. Adding the English track doubles the cost; every other option is free.</p>
+    </div>
+    <table class="prices">
+      <caption class="visually-hidden">Typical Sarvam cost per video</caption>
+      <tbody>
+        <tr><th scope="row">60-second Reel</th><td>₹0.50</td></tr>
+        <tr><th scope="row">10-minute vlog</th><td>₹5</td></tr>
+        <tr><th scope="row">1-hour podcast</th><td>₹30</td></tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section id="download" class="wrap section">
+    <h2>Download QuickCaps</h2>
+    <div class="downloads">
+      <div class="dl">
+        <h3>Premiere Pro 2026</h3>
+        <p>Double-click the file and Creative Cloud installs it. Then open Window, UXP Plugins, QuickCaps.</p>
+        <a class="btn" href="https://github.com/dedkul/quickcaps-adobe-plugin/releases/latest/download/QuickCaps-Premiere-2026.ccx">Download for 2026</a>
+      </div>
+      <div class="dl">
+        <h3>Premiere Pro 2022 to 2025</h3>
+        <p>Install it with the free <a href="https://aescripts.com/learn/zxp-installer/">ZXP Installer</a>, then open Window, Extensions, QuickCaps. Captions go straight onto your timeline.</p>
+        <a class="btn" href="https://github.com/dedkul/quickcaps-adobe-plugin/releases/latest/download/QuickCaps-Premiere-2022-2025.zxp">Download for 2022 to 2025</a>
+      </div>
+    </div>
+    <p class="fine">Works on Mac and Windows. <a href="https://github.com/dedkul/quickcaps-adobe-plugin/releases">All versions</a></p>
+    <div class="setup">
+      <h3>Then add your Sarvam key</h3>
+      <p>Create a free key at <a href="https://dashboard.sarvam.ai">dashboard.sarvam.ai</a>, open QuickCaps, click Settings, and paste it in. That's the whole setup.</p>
+    </div>
+  </section>
+
+  <section class="wrap section why">
+    <h2>Why it's free</h2>
+    <p>Most caption tools charge a monthly plan, whether you post daily or once a month. QuickCaps runs on your own Sarvam account, so you pay only for the audio you caption, and the plugin stays free and open source. Sarvam's models are built for Indian languages and code-mixed speech, which is why the Hinglish actually sounds like us.</p>
+  </section>
+
+  <section id="faq" class="wrap section faq">
+    <h2>Questions</h2>
+    <details>
+      <summary>How accurate is it?</summary>
+      <p>It uses Sarvam's Saaras model, made for Indian languages and Hindi-English mixing. Clear audio gives the best results, and you can fix any line on the review screen before it reaches your timeline.</p>
+    </details>
+    <details>
+      <summary>Can I edit the captions?</summary>
+      <p>Yes. Edit, split, merge, or delete any line, and replace a word everywhere at once. If you close Premiere halfway, your edits are waiting when you come back.</p>
+    </details>
+    <details>
+      <summary>Can I use an OpenAI, Gemini, or other AI key?</summary>
+      <p>No. QuickCaps only works with Sarvam AI, because it needs speech-to-text with timestamps that handles Hindi and Hinglish well. If you paste another company's key, the panel tells you.</p>
+    </details>
+    <details>
+      <summary>Where does my audio go?</summary>
+      <p>From your computer straight to Sarvam, which sends back the text. QuickCaps has no server and collects nothing.</p>
+    </details>
+    <details>
+      <summary>Can I change the font and style?</summary>
+      <p>Yes. They're normal Premiere captions: select one and use Properties, then Track Style. Save a look once and reuse it on every video.</p>
+    </details>
+    <details>
+      <summary>Why do I drag the captions in on Premiere 2026?</summary>
+      <p>Premiere 2026's new plugin system can't create caption tracks yet. QuickCaps adds the captions to your Project panel, already timed, and you drag them to the start of the timeline. On 2022 to 2025 they're placed for you.</p>
+    </details>
+    <details>
+      <summary>Does it work on Windows?</summary>
+      <p>Yes. The same downloads work on Mac and Windows.</p>
+    </details>
+    <details>
+      <summary>The panel is blank after installing on 2022 to 2025</summary>
+      <p>That's a known Adobe issue with some installers. On Mac, open Terminal and run <code>defaults write com.adobe.CSXS.11 PlayerDebugMode 1</code>. On Windows, open Command Prompt and run <code>reg add HKCU\Software\Adobe\CSXS.11 /v PlayerDebugMode /t REG_SZ /d 1 /f</code>. Use 12 instead of 11 for Premiere 2025, then restart Premiere.</p>
+    </details>
+  </section>
+</main>
+
+<footer class="wrap foot">
+  <p>QuickCaps is free and open source. <a href="https://github.com/dedkul/quickcaps-adobe-plugin">Source code</a>, <a href="https://github.com/dedkul/quickcaps-adobe-plugin/issues">report a problem</a>.</p>
+  <p>Made by <a href="https://github.com/dedkul">dedkul</a>. Not affiliated with Adobe or Sarvam AI.</p>
+</footer>
+
+<script src="main.js"></script>
+</body>
+</html>

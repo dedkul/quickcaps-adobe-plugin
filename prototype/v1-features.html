@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<title>QuickCaps v1 — feature prototype</title>
+<!--
+  Design prototype only (not loaded by the plugin). Shows the proposed v1
+  features across four panel states so the design can be approved before
+  it's built. Same visual language as core/ui/styles.css.
+-->
+<style>
+  :root {
+    --bg: #1e1e1e; --surface: #262626; --surface-hover: #2e2e2e; --inset: #181818;
+    --line: #333333; --line-strong: #454545;
+    --text: #e4e4e4; --text-2: #a3a3a3; --text-3: #6e6e6e;
+    --accent: #4b8ff0; --accent-tint: #1f2c40; --accent-text: #a9c8f5;
+    --success: #46b886; --success-tint: #1b2d25;
+    --warning: #e3a74a; --warning-tint: #33291a;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: #111; color: var(--text); font-family: -apple-system, "Segoe UI", "Noto Sans Devanagari", sans-serif; font-size: 12px; padding: 24px; }
+  h1 { font-size: 18px; font-weight: 600; margin-bottom: 4px; }
+  .lede { color: var(--text-2); font-size: 13px; margin-bottom: 20px; max-width: 760px; line-height: 1.5; }
+  .board { display: flex; flex-wrap: wrap; gap: 22px; align-items: flex-start; }
+  .frame { width: 340px; }
+  .frame-label { font-size: 11px; color: var(--text-3); margin-bottom: 8px; text-transform: uppercase; letter-spacing: .06em; }
+  .panel { background: var(--bg); border: 1px solid var(--line-strong); border-radius: 10px; overflow: hidden; display: flex; flex-direction: column; }
+  .bar { display: flex; align-items: center; padding: 10px 12px; border-bottom: 1px solid var(--line); }
+  .bar .title { font-size: 13px; font-weight: 600; flex: 1; display: flex; align-items: center; }
+  .mark { width: 18px; height: 14px; border-radius: 3px; background: #3f8ae0; margin-right: 8px; position: relative; }
+  .mark::before { content: ""; position: absolute; left: 3px; top: 8px; width: 7px; height: 2px; background: #fff; border-radius: 1px; }
+  .mark::after { content: ""; position: absolute; left: 11.5px; top: 8px; width: 3.5px; height: 2px; background: #fff; border-radius: 1px; }
+  .ghost { border: 1px solid var(--line-strong); border-radius: 6px; padding: 4px 9px; font-size: 11px; }
+  .back { font-size: 15px; color: var(--text-2); margin-right: 8px; }
+  .body { padding: 12px; }
+  .label { font-size: 11px; font-weight: 600; color: var(--text-2); margin: 14px 0 7px; display: flex; align-items: center; }
+  .label:first-child { margin-top: 2px; }
+  .label .aside { margin-left: auto; font-weight: 400; color: var(--text-3); }
+  .card { border: 1px solid var(--line); border-radius: 8px; background: var(--surface); }
+  .seg { display: flex; padding: 3px; border-radius: 8px; background: var(--inset); border: 1px solid var(--line); }
+  .seg div { flex: 1; text-align: center; padding: 5px 2px; border-radius: 6px; color: var(--text-2); cursor: pointer; }
+  .seg div small { display: block; font-size: 10px; color: var(--text-3); }
+  .seg .on { background: var(--surface-hover); border: 1px solid var(--line-strong); color: #fff; font-weight: 600; }
+  .choice { display: flex; align-items: center; padding: 8px 11px; border-bottom: 1px solid var(--line); }
+  .choice:last-child { border-bottom: 0; }
+  .choice.on { background: var(--accent-tint); }
+  .radio { width: 14px; height: 14px; border-radius: 7px; border: 1.5px solid var(--line-strong); margin-right: 10px; display: flex; align-items: center; justify-content: center; }
+  .choice.on .radio { border-color: var(--accent); }
+  .choice.on .radio::after { content: ""; width: 6px; height: 6px; border-radius: 3px; background: var(--accent); }
+  .sub { font-size: 10.5px; color: var(--text-3); margin-top: 2px; }
+
+  /* Extras: toggle rows with a cost badge on each */
+  .extra { display: flex; align-items: flex-start; padding: 9px 11px; border-bottom: 1px solid var(--line); cursor: pointer; }
+  .extra:last-child { border-bottom: 0; }
+  .extra.disabled { opacity: .45; cursor: default; }
+  .switch { width: 26px; height: 15px; border-radius: 8px; background: var(--line-strong); margin: 1px 10px 0 0; flex-shrink: 0; position: relative; }
+  .switch::after { content: ""; position: absolute; left: 2px; top: 2px; width: 11px; height: 11px; border-radius: 6px; background: #bbb; }
+  .extra.on .switch { background: var(--accent); }
+  .extra.on .switch::after { left: 13px; background: #fff; }
+  .extra .txt { flex: 1; }
+  .extra .name { font-size: 12px; }
+  .badge { font-size: 9.5px; font-weight: 600; padding: 2px 6px; border-radius: 4px; white-space: nowrap; margin-left: 8px; }
+  .free { background: var(--success-tint); color: var(--success); }
+  .double { background: var(--warning-tint); color: var(--warning); }
+  .subopt { display: none; margin-top: 7px; font-size: 11px; color: var(--text-2); align-items: center; }
+  .extra.on .subopt { display: flex; }
+  .box { width: 12px; height: 12px; border-radius: 3px; border: 1.5px solid var(--line-strong); margin-right: 6px; }
+  .box.on { background: var(--accent); border-color: var(--accent); }
+
+  .resume { display: flex; align-items: center; padding: 9px 11px; border-radius: 8px; border-left: 3px solid var(--accent); background: var(--accent-tint); margin-bottom: 4px; }
+  .resume .txt { flex: 1; }
+  .link { color: var(--accent-text); font-weight: 600; margin-left: 10px; cursor: pointer; }
+  .muted-link { color: var(--text-3); margin-left: 10px; cursor: pointer; }
+
+  .foot { border-top: 1px solid var(--line); padding: 10px 12px 12px; }
+  .cost { display: flex; align-items: center; font-size: 11px; color: var(--text-2); margin-bottom: 8px; }
+  .cost b { color: var(--text); margin-left: auto; }
+  .cost .x2 { color: var(--warning); margin-left: 6px; font-weight: 600; }
+  .primary { background: var(--accent); color: #fff; font-weight: 600; font-size: 13px; text-align: center; padding: 9px; border-radius: 7px; }
+  .secondary { border: 1px solid var(--line-strong); background: var(--surface); text-align: center; padding: 8px 12px; border-radius: 7px; }
+  .status { text-align: center; font-size: 11px; color: var(--text-2); margin-top: 8px; }
+  .status::before { content: ""; display: inline-block; width: 7px; height: 7px; border-radius: 4px; background: var(--success); margin-right: 6px; }
+
+  .step { display: flex; align-items: center; padding: 9px 0; border-bottom: 1px solid var(--line); }
+  .step:last-child { border-bottom: 0; }
+  .dot { width: 14px; height: 14px; border-radius: 7px; border: 1.5px solid var(--line-strong); margin-right: 10px; display: flex; align-items: center; justify-content: center; }
+  .done .dot { background: var(--success); border-color: var(--success); }
+  .active .dot { border-color: var(--accent); }
+  .active .dot::after { content: ""; width: 6px; height: 6px; border-radius: 3px; background: var(--accent); }
+  .step .meta { margin-left: auto; font-size: 11px; color: var(--text-3); }
+  .active .meta { color: var(--accent-text); }
+  .done .name, .pending .name { color: var(--text-2); }
+  .pending .name { color: var(--text-3); }
+  .pbar { height: 4px; border-radius: 2px; background: var(--inset); margin: 12px 0 6px; overflow: hidden; }
+  .pbar div { height: 4px; width: 46%; background: var(--accent); }
+
+  .cue { padding: 8px 10px; border-bottom: 1px solid var(--line); }
+  .cue:last-child { border-bottom: 0; }
+  .tc { font-size: 10px; color: var(--text-3); background: var(--inset); border-radius: 4px; padding: 1px 6px; display: inline-block; margin-bottom: 4px; }
+  .cue .t { font-size: 13px; }
+  .menu { margin-top: 6px; border: 1px solid var(--line-strong); border-radius: 8px; background: var(--surface); overflow: hidden; }
+  .menu div { padding: 8px 11px; border-bottom: 1px solid var(--line); display: flex; }
+  .menu div:last-child { border-bottom: 0; }
+  .menu span { margin-left: auto; color: var(--text-3); font-size: 10.5px; }
+
+  /* Mock Premiere timeline for "what you get" */
+  .tl { background: #232323; border: 1px solid var(--line-strong); border-radius: 10px; padding: 10px; width: 520px; }
+  .ruler { display: flex; font-size: 9.5px; color: var(--text-3); margin: 0 0 6px 54px; }
+  .ruler span { flex: 1; }
+  .track { display: flex; align-items: center; height: 26px; margin-bottom: 4px; }
+  .tname { width: 50px; font-size: 10px; color: var(--text-2); padding-right: 6px; text-align: right; }
+  .lane { flex: 1; height: 100%; background: #1a1a1a; border-radius: 3px; position: relative; overflow: hidden; }
+  .clip { position: absolute; top: 2px; bottom: 2px; border-radius: 3px; font-size: 9.5px; padding: 3px 5px; white-space: nowrap; overflow: hidden; }
+  .video { background: #4a6fa5; left: 0; right: 0; }
+  .audio { background: #3e8f6a; left: 0; right: 0; }
+  .cap-hi { background: #7a5bbf; }
+  .cap-en { background: #b06a3b; }
+  .tl-note { font-size: 11px; color: var(--text-2); margin-top: 10px; line-height: 1.5; }
+  .txtfile { margin-top: 12px; background: #fbfbf8; color: #222; border-radius: 6px; padding: 10px 12px; font-family: Menlo, monospace; font-size: 10.5px; line-height: 1.6; }
+  .notes { margin-top: 26px; max-width: 900px; color: var(--text-2); font-size: 12.5px; line-height: 1.6; }
+  .notes b { color: var(--text); }
+</style>
+</head>
+<body>
+<h1>QuickCaps v1: proposed features</h1>
+<p class="lede">Click the switches and caption script on the first panel; the cost line and the other screens update. Green badges cost nothing extra; amber ones use more Sarvam credits.</p>
+
+<div class="board">
+
+  <!-- 1. MAIN -->
+  <div class="frame">
+    <div class="frame-label">1 · Main screen</div>
+    <div class="panel">
+      <div class="bar"><div class="title"><span class="mark"></span>QuickCaps</div><div class="ghost">Settings</div></div>
+      <div class="body">
+        <div class="resume" id="resume">
+          <div class="txt"><div>Continue editing</div><div class="sub">38 captions · Sequence 01 · 2 hours ago</div></div>
+          <div class="link">Open</div><div class="muted-link" onclick="document.getElementById('resume').style.display='none'">Discard</div>
+        </div>
+
+        <div class="label">Caption source</div>
+        <div class="card">
+          <div class="choice"><div class="radio"></div><div>Entire sequence<div class="sub">All audio, start to end</div></div></div>
+          <div class="choice on"><div class="radio"></div><div>In to Out range<div class="sub">Between your In and Out marks · 4:32</div></div></div>
+        </div>
+
+        <div class="label">Caption script</div>
+        <div class="seg" id="script">
+          <div data-v="hi" class="on">हिंदी<small>Devanagari</small></div>
+          <div data-v="rom">Hinglish<small>Roman</small></div>
+          <div data-v="mix">Mixed<small>हिंदी + Eng</small></div>
+          <div data-v="en">English<small>Translated</small></div>
+        </div>
+
+        <div class="label">Extras <span class="aside">optional</span></div>
+        <div class="card">
+          <div class="extra" data-k="reels">
+            <div class="switch"></div>
+            <div class="txt">
+              <div class="name">Reels style <span class="badge free">No extra cost</span></div>
+              <div class="sub">No full stops at the end of captions</div>
+              <div class="subopt" data-k="caps"><div class="box"></div>ALL CAPS (Roman and English text)</div>
+            </div>
+          </div>
+          <div class="extra" data-k="fillers">
+            <div class="switch"></div>
+            <div class="txt"><div class="name">Clean up fillers <span class="badge free">No extra cost</span></div><div class="sub">Removes umm, uh, hmm, अं</div></div>
+          </div>
+          <div class="extra" data-k="bleep">
+            <div class="switch"></div>
+            <div class="txt"><div class="name">Bleep bad words <span class="badge free">No extra cost</span></div><div class="sub">Shows them as ****</div></div>
+          </div>
+          <div class="extra" data-k="bilingual" id="bilingual">
+            <div class="switch"></div>
+            <div class="txt"><div class="name">Add English track <span class="badge double">2× Sarvam usage</span></div><div class="sub" id="bi-sub">A second caption track with English subtitles</div></div>
+          </div>
+        </div>
+      </div>
+      <div class="foot">
+        <div class="cost">Estimated Sarvam cost <b id="cost">~₹2.27</b><span class="x2" id="x2"></span></div>
+        <div class="primary">Generate captions</div>
+        <div class="status">Sequence 01 · 04:32</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 2. PROGRESS -->
+  <div class="frame">
+    <div class="frame-label">2 · Generating</div>
+    <div class="panel">
+      <div class="bar"><div class="title"><span class="mark"></span>Generating</div></div>
+      <div class="body">
+        <div class="card" style="padding:4px 12px">
+          <div class="step done"><div class="dot"></div><div class="name">Export audio from Premiere</div><div class="meta">3 s</div></div>
+          <div class="step active"><div class="dot"></div><div class="name" id="p-transcribe">Transcribe in Hindi</div><div class="meta">12 s</div></div>
+          <div class="step pending" id="p-translate"><div class="dot"></div><div class="name">Translate to English</div><div class="meta"></div></div>
+          <div class="step pending"><div class="dot"></div><div class="name">Build captions</div><div class="meta"></div></div>
+        </div>
+        <div class="pbar"><div></div></div>
+        <div class="sub">Part 5 of 10 · sending 3 parts at a time (same cost, just faster)</div>
+        <div class="secondary" style="margin-top:14px">Cancel</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 3. REVIEW -->
+  <div class="frame">
+    <div class="frame-label">3 · Review</div>
+    <div class="panel">
+      <div class="bar"><div class="back">←</div><div class="title"><span class="mark"></span>Review captions</div></div>
+      <div class="body">
+        <div class="seg" id="tracks" style="margin-bottom:10px">
+          <div class="on" data-t="hi">हिंदी track<small>38 captions</small></div>
+          <div data-t="en">English track<small>36 captions</small></div>
+        </div>
+        <div class="card" style="padding:8px 10px;margin-bottom:10px;color:var(--text-3)">Find · Replace with · Replace all <span style="float:right">(already built)</span></div>
+        <div class="card" id="cues">
+          <div class="cue"><span class="tc">00:12.9 – 00:14.7</span><div class="t">नमस्ते दोस्तों, आज</div></div>
+          <div class="cue"><span class="tc">00:14.8 – 00:16.8</span><div class="t">हम बात करेंगे एक ऐसे टूल के बारे में</div></div>
+          <div class="cue"><span class="tc">00:16.9 – 00:18.8</span><div class="t">जो आपका घंटों का काम मिनटों में कर देगा</div></div>
+        </div>
+      </div>
+      <div class="foot">
+        <div style="display:flex;gap:8px"><div class="primary" style="flex:1">Add to timeline</div><div class="secondary" id="save">Save ▾</div></div>
+        <div class="menu" id="menu">
+          <div>Captions (.srt) <span>हिंदी</span></div>
+          <div id="menu-en">English captions (.srt) <span>English</span></div>
+          <div>Transcript (.txt) <span>for YouTube description</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 4. RESULT -->
+  <div class="frame" style="width:540px">
+    <div class="frame-label">4 · What you get in Premiere</div>
+    <div class="tl">
+      <div class="ruler"><span>00:12</span><span>00:15</span><span>00:18</span><span>00:21</span><span>00:24</span></div>
+      <div class="track"><div class="tname">C2</div><div class="lane" id="lane-en">
+        <div class="clip cap-en" style="left:2%;width:23%">Hello friends, today</div>
+        <div class="clip cap-en" style="left:26%;width:24%">we'll talk about a tool</div>
+        <div class="clip cap-en" style="left:51%;width:30%">that turns hours into minutes</div>
+      </div></div>
+      <div class="track"><div class="tname">C1</div><div class="lane">
+        <div class="clip cap-hi" style="left:2%;width:23%">नमस्ते दोस्तों, आज</div>
+        <div class="clip cap-hi" style="left:26%;width:24%">हम बात करेंगे एक…</div>
+        <div class="clip cap-hi" style="left:51%;width:30%">जो आपका घंटों का…</div>
+      </div></div>
+      <div class="track"><div class="tname">V1</div><div class="lane"><div class="clip video">Interview.mp4</div></div></div>
+      <div class="track"><div class="tname">A1</div><div class="lane"><div class="clip audio">Interview.mp4</div></div></div>
+      <div class="tl-note" id="tl-note">
+        <b>Two caption tracks, both timed to the speech.</b> Show either one (click the eye on C1/C2), burn one into the export, or
+        upload both .srt files to YouTube so viewers can pick a language.<br />
+        Premiere 2022–2025: both tracks are placed for you. Premiere 2026: both files land in your Project panel; drag them to 00:00.
+      </div>
+      <div class="txtfile">
+        Transcript (.txt)<br />
+        नमस्ते दोस्तों, आज हम बात करेंगे एक ऐसे टूल के बारे में जो आपका घंटों का काम मिनटों में कर देगा। वीडियो एडिटिंग में सबसे बोरिंग काम होता है कैप्शन लगाना।
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="notes">
+  <b>Always on, no switch:</b> your review is saved as you edit, so closing the panel or Premiere never loses work (the "Continue editing" card).
+  Long videos send 3 audio parts to Sarvam at a time; Sarvam bills per second of audio, so the cost is identical, it's just about 3× faster.<br /><br />
+  <b>Cost line:</b> based on the selected audio length at ₹30/hour; it doubles and turns amber when the English track is on.
+  Picking "English" as the caption script hides the English-track switch (it would be the same thing twice).
+</div>
+
+<script>
+  const state = { script: "hi", reels: false, caps: false, fillers: false, bleep: false, bilingual: false };
+  const AUDIO_SECONDS = 272, RUPEES_PER_HOUR = 30;
+  function render() {
+    document.querySelectorAll("#script div").forEach(d => d.classList.toggle("on", d.dataset.v === state.script));
+    document.querySelectorAll(".extra").forEach(e => e.classList.toggle("on", !!state[e.dataset.k]));
+    document.querySelector('.subopt .box').classList.toggle("on", state.caps);
+    const biOk = state.script !== "en";
+    if (!biOk) state.bilingual = false;
+    const bi = document.getElementById("bilingual");
+    bi.classList.toggle("disabled", !biOk);
+    bi.classList.toggle("on", state.bilingual);
+    document.getElementById("bi-sub").textContent = biOk ? "A second caption track with English subtitles" : "Captions are already English";
+    const passes = state.bilingual ? 2 : 1;
+    document.getElementById("cost").textContent = "~₹" + (AUDIO_SECONDS / 3600 * RUPEES_PER_HOUR * passes).toFixed(2);
+    document.getElementById("x2").textContent = state.bilingual ? "(2× · English track)" : "";
+    document.getElementById("p-translate").style.display = state.bilingual ? "" : "none";
+    document.getElementById("tracks").style.display = state.bilingual ? "" : "none";
+    document.getElementById("menu-en").style.display = state.bilingual ? "" : "none";
+    document.getElementById("lane-en").parentElement.style.display = state.bilingual ? "" : "none";
+    const label = { hi: "Transcribe in Hindi", rom: "Transcribe in Hindi", mix: "Transcribe (Hindi + English words)", en: "Translate to English" };
+    document.getElementById("p-transcribe").textContent = label[state.script];
+    // Reels style preview on the review list
+    document.querySelectorAll("#cues .t").forEach((t, i) => {
+      if (!t.dataset.orig) t.dataset.orig = t.textContent;
+      let s = t.dataset.orig;
+      if (state.reels) s = s.replace(/[।.]\s*$/, "");
+      t.textContent = s;
+    });
+  }
+  document.querySelectorAll("#script div").forEach(d => d.onclick = () => { state.script = d.dataset.v; render(); });
+  document.querySelectorAll(".extra").forEach(e => e.onclick = (ev) => {
+    if (e.classList.contains("disabled")) return;
+    if (ev.target.closest(".subopt")) { state.caps = !state.caps; render(); return; }
+    state[e.dataset.k] = !state[e.dataset.k]; render();
+  });
+  document.querySelectorAll("#tracks div").forEach(d => d.onclick = () => {
+    document.querySelectorAll("#tracks div").forEach(x => x.classList.toggle("on", x === d));
+    const en = d.dataset.t === "en";
+    const hi = ["नमस्ते दोस्तों, आज", "हम बात करेंगे एक ऐसे टूल के बारे में", "जो आपका घंटों का काम मिनटों में कर देगा"];
+    const eng = ["Hello friends, today", "we'll talk about a tool", "that turns hours of work into minutes"];
+    document.querySelectorAll("#cues .t").forEach((t, i) => { t.dataset.orig = (en ? eng : hi)[i]; });
+    render();
+  });
+  render();
+</script>
+</body>
+</html>

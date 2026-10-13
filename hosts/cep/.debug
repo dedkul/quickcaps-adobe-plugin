@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Development only: enables Chrome DevTools for the panel at
+     http://localhost:8098. Excluded from packages sent to friends. -->
+<ExtensionList>
+  <Extension Id="com.quickcaps.cep.panel">
+    <HostList>
+      <Host Name="PPRO" Port="8098" />
+    </HostList>
+  </Extension>
+</ExtensionList>

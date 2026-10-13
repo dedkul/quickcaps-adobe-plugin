@@ -1,0 +1,19 @@
+# Private: the signing certificate and its password. Never publish these.
+signing/
+*.p12
+password.txt
+
+# Downloaded third-party tool (Adobe ZXPSignCmd)
+tools/
+
+# Build outputs (recreate with scripts/build.js and scripts/package.sh).
+# Installers go on GitHub Releases, not in the repo.
+dist/
+release/
+*.zxp
+*.ccx
+
+# Local editor and Claude Code settings
+.claude/settings.local.json
+.vscode/
+.DS_Store

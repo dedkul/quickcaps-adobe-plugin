@@ -1,0 +1,363 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<title>QuickCaps</title>
+<link rel="stylesheet" href="styles.css?v=17" />
+</head>
+<!--
+  Built for Premiere's UXP renderer, which is not a full browser: no
+  <button> (forced Spectrum styling), no lists, no contenteditable, no CSS
+  animation/transform/position. Interactive controls are divs with
+  role-like classes, wired up in app.js.
+
+  Layout: fixed header, then each screen = a scrolling body plus an
+  optional footer pinned to the bottom (so the main action never scrolls
+  out of reach on short screens). Bars span the full panel width; their
+  content sits in a centered `.col` capped at a readable width.
+-->
+<body>
+<div id="panel">
+
+  <!-- ============ Header ============ -->
+  <div id="topbar">
+    <div class="col bar">
+      <div id="btn-back" class="icon-btn hidden" tabindex="0" title="Back">
+        <svg width="14" height="12" viewBox="0 0 14 12">
+          <path d="M0.6 6 L5.6 1 L7 2.4 L4.4 5 L13.4 5 L13.4 7 L4.4 7 L7 9.6 L5.6 11 Z" fill="#c8c8c8" />
+        </svg>
+      </div>
+      <div id="brand">
+        <svg class="brand-mark" width="18" height="14" viewBox="0 0 18 14">
+          <rect x="0" y="0" width="18" height="14" rx="3" fill="#3f8ae0" />
+          <rect x="3" y="8" width="7" height="2" rx="1" fill="#ffffff" />
+          <rect x="11.5" y="8" width="3.5" height="2" rx="1" fill="#ffffff" />
+        </svg>
+        <span id="title">QuickCaps</span>
+      </div>
+      <div id="btn-settings" class="ghost-btn" tabindex="0" title="Settings">
+        <svg width="14" height="12" viewBox="0 0 14 12">
+          <rect x="0" y="1" width="14" height="1.6" rx="0.8" fill="#9a9a9a" />
+          <rect x="0" y="5.2" width="14" height="1.6" rx="0.8" fill="#9a9a9a" />
+          <rect x="0" y="9.4" width="14" height="1.6" rx="0.8" fill="#9a9a9a" />
+          <rect x="8" y="0" width="3.6" height="3.6" rx="1.8" fill="#d6d6d6" />
+          <rect x="2.5" y="4.2" width="3.6" height="3.6" rx="1.8" fill="#d6d6d6" />
+          <rect x="6.5" y="8.4" width="3.6" height="3.6" rx="1.8" fill="#d6d6d6" />
+        </svg>
+        <span class="ghost-label">Settings</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- In-flow notices replace toasts (UXP has no positioned overlays). -->
+  <div id="notice" class="hidden">
+    <div id="notice-body">
+      <div id="notice-text"></div>
+      <div id="notice-detail" class="hidden"></div>
+      <div id="notice-action" class="link-btn hidden" tabindex="0"></div>
+    </div>
+    <div id="notice-close" class="icon-btn small" tabindex="0" title="Dismiss">
+      <svg width="10" height="10" viewBox="0 0 10 10">
+        <path d="M0.5 1.9 L1.9 0.5 L5 3.6 L8.1 0.5 L9.5 1.9 L6.4 5 L9.5 8.1 L8.1 9.5 L5 6.4 L1.9 9.5 L0.5 8.1 L3.6 5 Z" fill="#a3a3a3" />
+      </svg>
+    </div>
+  </div>
+
+  <!-- ============ Screen: Main ============ -->
+  <div id="screen-main" class="screen">
+    <div class="screen-scroll">
+      <div class="col">
+        <!-- Shown when an unfinished review was saved (survives closing Premiere). -->
+        <div id="resume-card" class="hidden">
+          <div class="resume-text">
+            <div class="resume-title">Continue editing</div>
+            <div id="resume-sub" class="choice-sub"></div>
+          </div>
+          <div id="btn-resume" class="link-btn" tabindex="0">Open</div>
+          <div id="btn-discard" class="link-btn muted" tabindex="0">Discard</div>
+        </div>
+
+        <div class="section-label">Caption source</div>
+        <div id="scope-list" class="choice-list">
+          <div class="choice" data-scope="sequence" tabindex="0">
+            <div class="radio"><div class="radio-dot"></div></div>
+            <div class="choice-text">
+              <div class="choice-title">Entire sequence</div>
+              <div class="choice-sub">All audio, start to end</div>
+            </div>
+          </div>
+          <div class="choice" data-scope="inout" tabindex="0">
+            <div class="radio"><div class="radio-dot"></div></div>
+            <div class="choice-text">
+              <div class="choice-title">In to Out range</div>
+              <div class="choice-sub">Between your In and Out marks</div>
+            </div>
+          </div>
+          <div class="choice" data-scope="clips" tabindex="0">
+            <div class="radio"><div class="radio-dot"></div></div>
+            <div class="choice-text">
+              <div class="choice-title">Selected clips</div>
+              <div class="choice-sub" id="clips-note">Select clips on the timeline</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="section-label">Caption script</div>
+        <div class="seg" id="seg-script">
+          <div class="seg-item" data-val="hi" tabindex="0">
+            <div class="seg-title">&#2361;&#2367;&#2306;&#2342;&#2368;</div>
+            <div class="seg-sub">Devanagari</div>
+          </div>
+          <div class="seg-item" data-val="rom" tabindex="0">
+            <div class="seg-title">Hinglish</div>
+            <div class="seg-sub">Roman letters</div>
+          </div>
+          <div class="seg-item" data-val="mix" tabindex="0">
+            <div class="seg-title">Mixed</div>
+            <div class="seg-sub">हिंदी + English</div>
+          </div>
+          <div class="seg-item" data-val="en" tabindex="0">
+            <div class="seg-title">English</div>
+            <div class="seg-sub">Translated</div>
+          </div>
+        </div>
+
+        <div class="section-label">Caption pacing</div>
+        <div class="seg" id="seg-pace">
+          <div class="seg-item" data-val="fast" tabindex="0">
+            <div class="seg-title">Fast</div>
+            <div class="seg-sub">Reels</div>
+          </div>
+          <div class="seg-item" data-val="balanced" tabindex="0">
+            <div class="seg-title">Balanced</div>
+            <div class="seg-sub">Most videos</div>
+          </div>
+          <div class="seg-item" data-val="relaxed" tabindex="0">
+            <div class="seg-title">Relaxed</div>
+            <div class="seg-sub">YouTube</div>
+          </div>
+          <div class="seg-item" data-val="custom" tabindex="0">
+            <div class="seg-title">Custom</div>
+            <div class="seg-sub">Your rules</div>
+          </div>
+        </div>
+
+        <div id="custom-panel" class="hidden">
+          <div class="field-row">
+            <div class="field-row-label">Lines per caption</div>
+            <div class="seg seg-sm" id="seg-lines">
+              <div class="seg-item" data-val="1" tabindex="0"><div class="seg-title">1</div></div>
+              <div class="seg-item" data-val="2" tabindex="0"><div class="seg-title">2</div></div>
+            </div>
+          </div>
+          <div class="field-row">
+            <div class="field-row-label">Characters per line</div>
+            <input type="number" id="opt-maxchars" class="num-input" min="12" max="64" step="1" />
+          </div>
+          <div class="field-row">
+            <div class="field-row-label">Max seconds on screen</div>
+            <input type="number" id="opt-maxdur" class="num-input" min="1" max="10" step="1" />
+          </div>
+        </div>
+
+        <!-- Live preview: how a caption breaks with the current pacing/script. -->
+        <div id="preview-card">
+          <div id="preview-frame">
+            <div id="preview-spacer"></div>
+            <div id="preview-caption"></div>
+          </div>
+          <div id="preview-meta">
+            <div id="preview-info"></div>
+            <div id="preview-next" class="link-btn" tabindex="0" title="Show the next caption">Next</div>
+          </div>
+        </div>
+        <div class="footnote">Font, size, and colors come from Premiere's caption style. Change them in Properties → Track Style once the captions are on your timeline.</div>
+
+        <div class="section-label-row">
+          <div class="section-label">Extras</div>
+          <div class="footnote">optional</div>
+        </div>
+        <div id="extras" class="choice-list">
+          <div class="extra" data-k="reels" tabindex="0">
+            <div class="switch"><div class="knob"></div></div>
+            <div class="extra-text">
+              <div class="extra-head"><div class="extra-name">Reels style</div><div class="badge free">No extra cost</div></div>
+              <div class="extra-sub">No full stops at the end of captions</div>
+              <div id="opt-caps" class="check subopt" tabindex="0">
+                <div class="check-box"><div class="check-tick"></div></div>
+                <div class="check-label">ALL CAPS (Roman and English text)</div>
+              </div>
+            </div>
+          </div>
+          <div class="extra" data-k="fillers" tabindex="0">
+            <div class="switch"><div class="knob"></div></div>
+            <div class="extra-text">
+              <div class="extra-head"><div class="extra-name">Clean up fillers</div><div class="badge free">No extra cost</div></div>
+              <div class="extra-sub">Removes umm, uh, hmm, अं</div>
+            </div>
+          </div>
+          <div class="extra" data-k="bleep" tabindex="0">
+            <div class="switch"><div class="knob"></div></div>
+            <div class="extra-text">
+              <div class="extra-head"><div class="extra-name">Bleep bad words</div><div class="badge free">No extra cost</div></div>
+              <div class="extra-sub">Shows them as ****</div>
+            </div>
+          </div>
+          <div class="extra" data-k="bilingual" tabindex="0">
+            <div class="switch"><div class="knob"></div></div>
+            <div class="extra-text">
+              <div class="extra-head"><div class="extra-name">Add English track</div><div class="badge double">2× Sarvam usage</div></div>
+              <div class="extra-sub">A second caption track with English subtitles</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="screen-footer">
+      <div class="col">
+        <div id="cost-row">
+          <div class="cost-label">Estimated Sarvam cost</div>
+          <div id="cost-val"></div>
+          <div id="cost-x2" class="hidden">(2× · English track)</div>
+        </div>
+        <div id="btn-generate" class="primary-btn" tabindex="0">Generate captions</div>
+        <div id="seq-info">
+          <div id="seq-dot" class="status-dot"></div>
+          <div id="seq-text">Looking for a sequence…</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ Screen: Progress ============ -->
+  <div id="screen-progress" class="screen hidden">
+    <div class="screen-scroll">
+      <div class="col">
+        <div id="steps">
+          <div class="step" data-step="export">
+            <div class="step-mark"><div class="step-inner"></div></div>
+            <div class="step-label">Export audio from Premiere</div>
+            <div class="step-meta"></div>
+          </div>
+          <div class="step" data-step="transcribe">
+            <div class="step-mark"><div class="step-inner"></div></div>
+            <div class="step-label">Transcribe with Sarvam</div>
+            <div class="step-meta"></div>
+          </div>
+          <div class="step hidden" data-step="translate">
+            <div class="step-mark"><div class="step-inner"></div></div>
+            <div class="step-label">Translate to English</div>
+            <div class="step-meta"></div>
+          </div>
+          <div class="step" data-step="build">
+            <div class="step-mark"><div class="step-inner"></div></div>
+            <div class="step-label">Build captions</div>
+            <div class="step-meta"></div>
+          </div>
+        </div>
+        <div id="pbar-track"><div id="pbar-fill"></div></div>
+        <div id="progress-note" class="footnote"></div>
+        <div id="btn-cancel" class="secondary-btn" tabindex="0">Cancel</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ Screen: Review ============ -->
+  <div id="screen-review" class="screen hidden">
+    <div class="screen-scroll">
+      <div class="col">
+        <div class="seg hidden" id="seg-track">
+          <div class="seg-item" data-val="main" tabindex="0"><div class="seg-title" id="track-main-title">हिंदी track</div><div class="seg-sub" id="track-main-sub"></div></div>
+          <div class="seg-item" data-val="en" tabindex="0"><div class="seg-title">English track</div><div class="seg-sub" id="track-en-sub"></div></div>
+        </div>
+        <div id="review-head">
+          <div id="review-count"></div>
+        </div>
+        <div class="footnote review-hint">Timecodes match your sequence. Click any caption to edit it; hover a row to split, merge, or delete.</div>
+        <div id="find-bar">
+          <div class="find-row">
+            <input type="text" id="inp-find" placeholder="Find" />
+            <div id="find-count" class="footnote"></div>
+          </div>
+          <div class="find-row">
+            <input type="text" id="inp-replace" placeholder="Replace with" />
+            <div id="btn-replace-all" class="secondary-btn small" tabindex="0">Replace all</div>
+          </div>
+          <div id="find-whole" class="check active" tabindex="0" title="Don't match inside longer words, e.g. का inside काम">
+            <div class="check-box"><div class="check-tick"></div></div>
+            <div class="check-label">Whole words only</div>
+          </div>
+        </div>
+        <div id="cue-list"></div>
+      </div>
+    </div>
+    <div class="screen-footer">
+      <div class="col">
+        <div id="review-actions">
+          <div id="btn-place" class="primary-btn" tabindex="0">Add to project</div>
+          <div id="btn-save" class="secondary-btn" tabindex="0" title="Save captions or a transcript">Save ▾</div>
+        </div>
+        <div id="save-menu" class="hidden">
+          <div class="menu-item" id="save-srt" tabindex="0"><div class="menu-label">Captions (.srt)</div><div class="menu-hint" id="save-srt-hint"></div></div>
+          <div class="menu-item hidden" id="save-srt-en" tabindex="0"><div class="menu-label">English captions (.srt)</div><div class="menu-hint">English</div></div>
+          <div class="menu-item" id="save-txt" tabindex="0"><div class="menu-label">Transcript (.txt)</div><div class="menu-hint">for a YouTube description</div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ Screen: Settings ============ -->
+  <div id="screen-settings" class="screen hidden">
+    <div class="screen-scroll">
+      <div class="col">
+        <div class="section-label">Sarvam API key</div>
+        <div id="key-row">
+          <input type="password" id="inp-key" placeholder="Paste your key from dashboard.sarvam.ai" />
+          <div id="btn-key-eye" class="link-btn" tabindex="0">Show</div>
+        </div>
+        <div id="key-status-row">
+          <div id="key-status" class="footnote"></div>
+          <div id="btn-key-check" class="secondary-btn small" tabindex="0">Check key</div>
+        </div>
+
+        <div class="section-label">Model</div>
+        <select id="inp-model">
+          <option value="saaras:v4">Saaras v4 · latest, recommended</option>
+          <option value="saaras:v3">Saaras v3</option>
+        </select>
+
+        <div class="section-label-row">
+          <div class="section-label">Names and words</div>
+          <div id="keyterms-count" class="footnote"></div>
+        </div>
+        <textarea id="inp-keyterms" placeholder="One per line, e.g.&#10;QuickCaps&#10;Ashish&#10;Bengaluru"></textarea>
+        <div id="keyterms-note" class="footnote"></div>
+
+        <div class="section-label">Spoken language</div>
+        <select id="inp-language">
+          <option value="hi-IN">Hindi (hi-IN) · code-mixed</option>
+          <option value="unknown">Auto-detect</option>
+        </select>
+
+        <div id="usage-card">
+          <div class="usage-label">Usage this month</div>
+          <div id="usage-val">0 min · ~₹0</div>
+        </div>
+        <div class="footnote">Estimated from audio length at ₹30 per hour. Your Sarvam dashboard has exact billing.</div>
+        <div id="version-line" class="footnote"></div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script src="../srt.js?v=17"></script>
+<script src="../cues.js?v=17"></script>
+<script src="../sarvam.js?v=17"></script>
+<script src="../polish.js?v=17"></script>
+<script src="../settings.js?v=17"></script>
+<script src="adapter.js?v=17"></script>
+<script src="app.js?v=17"></script>
+</body>
+</html>

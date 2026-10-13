@@ -1,0 +1,630 @@
+/*
+ * QuickCaps — panel styles.
+ * Restricted to what Premiere's UXP renderer supports: flexbox, box model,
+ * borders/radius, colors, opacity, overflow, :hover/:focus/:active.
+ * Not available there (so not used here): gap, transform, transition,
+ * animation, position, box-shadow, text-transform, cursor.
+ */
+
+:root {
+  --bg: #1e1e1e;
+  --surface: #262626;
+  --surface-hover: #2e2e2e;
+  --inset: #181818;
+  --line: #333333;
+  --line-strong: #454545;
+  --text: #e4e4e4;
+  --text-2: #a3a3a3;
+  --text-3: #6e6e6e;
+  --accent: #4b8ff0;
+  --accent-hover: #63a0f5;
+  --accent-tint: #1f2c40;
+  --accent-text: #a9c8f5;
+  --success: #46b886;
+  --success-tint: #1b2d25;
+  --danger: #e5666a;
+  --danger-tint: #33201f;
+  --warning: #e3a74a;
+  --warning-tint: #33291a;
+}
+
+title { display: none; }
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  background-color: var(--bg);
+  color: var(--text);
+  font-family: "Adobe Clean", -apple-system, "Segoe UI", "Noto Sans Devanagari", sans-serif;
+  font-size: 12px;
+}
+
+/* Panel fills the window; only each screen's body scrolls, so the header
+   and the footer actions stay put however short the panel gets. */
+#panel {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  height: 100vh;
+}
+#topbar, #notice { flex-shrink: 0; }
+
+/* Readable column. Panel controls work best at roughly 300-440px; wider
+   and the eye has to travel too far between a label and its control.
+   Bars and dividers still span the full panel, so it stays native-looking
+   when Premiere stretches the panel across a wide screen. */
+.col {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  max-width: 440px;
+  align-self: center;
+  margin-left: auto;
+  margin-right: auto;
+}
+.col.bar { flex-direction: row; align-items: center; }
+
+.hidden { display: none; }
+
+/* ---------- Header ---------- */
+#topbar {
+  display: flex;
+  flex-direction: column;
+  padding: 10px 12px;
+  border-bottom: 1px solid var(--line);
+}
+#brand { display: flex; flex-direction: row; align-items: center; flex-grow: 1; }
+.brand-mark { margin-right: 8px; }
+#title { font-size: 13px; font-weight: 600; color: var(--text); }
+
+.icon-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
+  border-radius: 6px;
+  margin-right: 6px;
+}
+.icon-btn:hover { background-color: var(--surface-hover); }
+/* Icons are SVG (not text glyphs), so flex centering is exact. */
+.icon-btn svg { flex-shrink: 0; }
+.icon-btn.small { width: 22px; height: 22px; margin-right: 0; margin-top: -3px; }
+
+.ghost-btn {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  padding: 5px 9px;
+  border-radius: 6px;
+  border: 1px solid var(--line-strong);
+}
+.ghost-btn:hover { background-color: var(--surface-hover); border-color: #555555; }
+.ghost-label { margin-left: 6px; font-size: 11px; color: var(--text); }
+
+/* ---------- Notice (replaces toasts + banners) ---------- */
+#notice {
+  display: flex;
+  flex-direction: row;
+  align-items: flex-start;
+  align-self: center;
+  width: calc(100% - 24px);
+  max-width: 440px;
+  margin-top: 10px;
+  padding: 9px 8px 9px 11px;
+  border-radius: 6px;
+  border-left: 3px solid var(--accent);
+  background-color: var(--accent-tint);
+}
+#notice.hidden { display: none; }
+#notice.error { border-left-color: var(--danger); background-color: var(--danger-tint); }
+#notice.warn { border-left-color: var(--warning); background-color: var(--warning-tint); }
+#notice.success { border-left-color: var(--success); background-color: var(--success-tint); }
+#notice-body { flex-grow: 1; flex-shrink: 1; }
+#notice-text { font-size: 12px; color: var(--text); }
+#notice-detail { font-size: 10px; color: var(--text-3); margin-top: 4px; }
+#notice-action { margin-top: 6px; }
+
+.link-btn { color: var(--accent-text); font-size: 12px; font-weight: 600; padding: 2px 0; }
+.link-btn:hover { color: #ffffff; }
+
+/* ---------- Screens ---------- */
+.screen {
+  display: flex;
+  flex-direction: column;
+  flex-grow: 1;
+  flex-shrink: 1;
+  flex-basis: 0px;
+  min-height: 0px;
+}
+.screen.hidden { display: none; }
+.screen-scroll {
+  display: flex;
+  flex-direction: column;
+  flex-grow: 1;
+  flex-shrink: 1;
+  flex-basis: 0px;
+  min-height: 0px;
+  overflow-y: auto;
+  /* Reserve scrollbar room on both sides so the centered column lines up
+     with the header. Browsers only; UXP ignores it (overlay scrollbars). */
+  scrollbar-gutter: stable both-edges;
+  padding: 12px 12px 16px 12px;
+}
+/* Keep content at natural height and scroll, rather than squashing it. */
+.screen-scroll > div,
+.screen-scroll > .col > div { flex-shrink: 0; }
+.screen-footer {
+  flex-shrink: 0;
+  padding: 10px 12px 12px 12px;
+  border-top: 1px solid var(--line);
+  background-color: var(--bg);
+}
+
+.section-label {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-2);
+  margin: 14px 0 7px 0;
+}
+.section-label:first-child { margin-top: 2px; }
+
+.footnote { font-size: 11px; color: var(--text-3); margin-top: 8px; }
+
+/* ---------- Choice list (radio cards) ---------- */
+.choice-list {
+  display: flex;
+  flex-direction: column;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background-color: var(--surface);
+  overflow: hidden;
+}
+.choice {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  padding: 9px 11px;
+  border-bottom: 1px solid var(--line);
+}
+.choice:last-child { border-bottom: 0px solid var(--line); }
+.choice:hover { background-color: var(--surface-hover); }
+.choice.active { background-color: var(--accent-tint); }
+.choice.unavailable { opacity: 0.5; }
+
+.radio {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 16px;
+  height: 16px;
+  border-radius: 8px;
+  border: 1.5px solid var(--line-strong);
+  margin-right: 10px;
+  flex-shrink: 0;
+}
+.radio-dot { width: 8px; height: 8px; border-radius: 4px; background-color: var(--accent); opacity: 0; }
+.choice.active .radio { border-color: var(--accent); }
+.choice.active .radio-dot { opacity: 1; }
+
+.choice-text { display: flex; flex-direction: column; flex-grow: 1; }
+.choice-title { font-size: 12px; color: var(--text); }
+.choice-sub { font-size: 11px; color: var(--text-3); margin-top: 2px; }
+.choice.active .choice-title { color: #ffffff; }
+.choice.active .choice-sub { color: var(--accent-text); }
+
+/* ---------- Segmented control ---------- */
+.seg {
+  display: flex;
+  flex-direction: row;
+  padding: 3px;
+  border-radius: 8px;
+  background-color: var(--inset);
+  border: 1px solid var(--line);
+}
+.seg-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  flex-grow: 1;
+  flex-basis: 0;
+  padding: 6px 4px;
+  border-radius: 6px;
+}
+.seg-item:hover { background-color: var(--surface); }
+.seg-item.active { background-color: var(--surface-hover); border: 1px solid var(--line-strong); }
+.seg-title { font-size: 13px; color: var(--text-2); }
+.seg-sub { font-size: 10px; color: var(--text-3); margin-top: 1px; }
+.seg-item.active .seg-title { color: #ffffff; font-weight: 600; }
+.seg-item.active .seg-sub { color: var(--text-2); }
+
+.seg-sm { padding: 2px; border-radius: 6px; }
+.seg-sm .seg-item { padding: 3px 10px; flex-grow: 0; flex-basis: auto; border-radius: 4px; }
+.seg-sm .seg-title { font-size: 11px; }
+
+/* ---------- Pacing: custom rules + preview ---------- */
+#seg-pace .seg-title,
+#seg-script .seg-title { font-size: 12px; }
+
+#custom-panel {
+  display: flex;
+  flex-direction: column;
+  margin-top: 8px;
+  padding: 4px 11px 6px 11px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background-color: var(--surface);
+}
+#custom-panel.hidden { display: none; }
+
+#preview-card {
+  display: flex;
+  flex-direction: column;
+  margin-top: 10px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background-color: var(--surface);
+  overflow: hidden;
+}
+/* A stand-in video frame with the caption sitting near the bottom,
+   roughly where Premiere's default caption style puts it. */
+#preview-frame {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  height: 118px;
+  padding: 10px 14px 14px 14px;
+  background-color: #0b0b0b;
+}
+#preview-spacer { flex-grow: 1; }
+#preview-caption {
+  padding: 3px 8px;
+  border-radius: 3px;
+  background-color: #000000;
+  color: #ffffff;
+  font-size: 13px;
+  text-align: center;
+  white-space: pre;
+}
+#preview-meta {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  padding: 7px 11px;
+  border-top: 1px solid var(--line);
+}
+#preview-info { font-size: 11px; color: var(--text-2); flex-grow: 1; }
+#preview-next { font-size: 11px; white-space: nowrap; margin-left: 8px; }
+
+.field-row {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  padding: 6px 0;
+}
+.field-row-label { font-size: 11px; color: var(--text-2); flex-grow: 1; }
+
+input, select, textarea {
+  font-family: "Adobe Clean", -apple-system, "Segoe UI", "Noto Sans Devanagari", sans-serif;
+  font-size: 12px;
+  color: var(--text);
+  background-color: var(--inset);
+  border: 1px solid var(--line-strong);
+  border-radius: 6px;
+  padding: 6px 8px;
+}
+input:focus, select:focus, textarea:focus { border-color: var(--accent); }
+.num-input { width: 64px; text-align: right; }
+
+/* ---------- Buttons ---------- */
+.primary-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 34px;
+  border-radius: 7px;
+  background-color: var(--accent);
+  color: #ffffff;
+  font-size: 13px;
+  font-weight: 600;
+}
+.primary-btn:hover { background-color: var(--accent-hover); }
+.primary-btn.busy { opacity: 0.6; }
+
+.secondary-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 32px;
+  padding: 0 14px;
+  border-radius: 7px;
+  border: 1px solid var(--line-strong);
+  background-color: var(--surface);
+  color: var(--text);
+  font-size: 12px;
+}
+.secondary-btn:hover { background-color: var(--surface-hover); border-color: #555555; }
+.secondary-btn.small { height: 26px; padding: 0 10px; font-size: 11px; }
+.secondary-btn.busy { opacity: 0.6; }
+
+/* ---------- Sequence status ---------- */
+#seq-info {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+  margin-top: 8px;
+}
+.status-dot { width: 7px; height: 7px; border-radius: 4px; background-color: var(--text-3); margin-right: 7px; }
+.status-dot.ok { background-color: var(--success); }
+.status-dot.bad { background-color: var(--danger); }
+#seq-text { font-size: 11px; color: var(--text-2); }
+
+/* ---------- Progress ---------- */
+#steps {
+  display: flex;
+  flex-direction: column;
+  padding: 4px 12px;
+  margin-bottom: 14px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background-color: var(--surface);
+}
+.step {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  padding: 9px 0;
+  border-bottom: 1px solid var(--line);
+}
+.step:last-child { border-bottom: 0px solid var(--line); }
+.step-mark {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 16px;
+  height: 16px;
+  border-radius: 8px;
+  border: 1.5px solid var(--line-strong);
+  margin-right: 10px;
+  flex-shrink: 0;
+}
+.step-inner { width: 6px; height: 6px; border-radius: 3px; background-color: var(--accent); opacity: 0; }
+.step-label { font-size: 12px; color: var(--text-3); flex-grow: 1; }
+.step-meta { font-size: 11px; color: var(--text-3); }
+.step.active .step-mark { border-color: var(--accent); }
+.step.active .step-inner { opacity: 1; }
+.step.active .step-label { color: var(--text); }
+.step.active .step-meta { color: var(--accent-text); }
+.step.done .step-mark { border-color: var(--success); background-color: var(--success); }
+.step.done .step-label { color: var(--text-2); }
+
+#pbar-track { height: 4px; border-radius: 2px; background-color: var(--inset); overflow: hidden; }
+#pbar-fill { height: 4px; width: 0%; border-radius: 2px; background-color: var(--accent); }
+#btn-cancel { margin-top: 16px; }
+
+/* ---------- Review ---------- */
+#review-head { display: flex; flex-direction: row; align-items: center; }
+#review-count { font-size: 13px; font-weight: 600; flex-grow: 1; }
+.review-hint { margin-top: 6px; margin-bottom: 8px; }
+
+/* ---------- Continue editing ---------- */
+#resume-card {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  padding: 9px 11px;
+  margin-bottom: 4px;
+  border-radius: 8px;
+  border-left: 3px solid var(--accent);
+  background-color: var(--accent-tint);
+}
+.resume-text { flex-grow: 1; }
+.resume-title { font-size: 12px; color: var(--text); }
+#btn-resume { margin-left: 10px; }
+#btn-discard { margin-left: 12px; }
+.link-btn.muted { color: var(--text-3); font-weight: 400; }
+.link-btn.muted:hover { color: var(--text); }
+
+/* ---------- Extras ---------- */
+.extra {
+  display: flex;
+  flex-direction: row;
+  align-items: flex-start;
+  padding: 9px 11px;
+  border-bottom: 1px solid var(--line);
+}
+.extra:last-child { border-bottom: 0px solid var(--line); }
+.extra:hover { background-color: var(--surface-hover); }
+.extra.disabled { opacity: 0.45; }
+/* Switch without absolute positioning (UXP): the knob slides by flex alignment. */
+.switch {
+  display: flex;
+  flex-direction: row;
+  justify-content: flex-start;
+  align-items: center;
+  width: 26px;
+  height: 15px;
+  padding: 0 2px;
+  margin: 1px 10px 0 0;
+  border-radius: 8px;
+  background-color: var(--line-strong);
+  flex-shrink: 0;
+}
+.knob { width: 11px; height: 11px; border-radius: 6px; background-color: #bbbbbb; }
+.extra.on .switch { justify-content: flex-end; background-color: var(--accent); }
+.extra.on .knob { background-color: #ffffff; }
+.extra-text { display: flex; flex-direction: column; flex-grow: 1; flex-shrink: 1; min-width: 0px; }
+.extra-head { display: flex; flex-direction: row; align-items: center; flex-wrap: wrap; }
+.extra-name { font-size: 12px; color: var(--text); margin-right: 8px; }
+.extra-sub { font-size: 11px; color: var(--text-3); margin-top: 2px; }
+.badge { font-size: 9.5px; font-weight: 600; padding: 2px 6px; border-radius: 4px; white-space: nowrap; }
+.badge.free { background-color: var(--success-tint); color: var(--success); }
+.badge.double { background-color: var(--warning-tint); color: var(--warning); }
+.subopt { margin-top: 7px; display: none; }
+.extra.on .subopt { display: flex; }
+
+/* ---------- Cost line ---------- */
+#cost-row { display: flex; flex-direction: row; align-items: center; margin-bottom: 8px; }
+.cost-label { font-size: 11px; color: var(--text-2); flex-grow: 1; }
+#cost-val { font-size: 11px; font-weight: 600; color: var(--text); }
+#cost-x2 { font-size: 11px; font-weight: 600; color: var(--warning); margin-left: 6px; }
+
+/* ---------- Review: tracks + save menu ---------- */
+#seg-track { margin-bottom: 10px; }
+#save-menu {
+  display: flex;
+  flex-direction: column;
+  margin-top: 8px;
+  border: 1px solid var(--line-strong);
+  border-radius: 8px;
+  background-color: var(--surface);
+  overflow: hidden;
+}
+.menu-item { display: flex; flex-direction: row; align-items: center; padding: 8px 11px; border-bottom: 1px solid var(--line); }
+.menu-item:last-child { border-bottom: 0px solid var(--line); }
+.menu-item:hover { background-color: var(--surface-hover); }
+.menu-label { font-size: 12px; color: var(--text); flex-grow: 1; }
+.menu-hint { font-size: 10.5px; color: var(--text-3); }
+
+/* ---------- Find & replace ---------- */
+#find-bar {
+  display: flex;
+  flex-direction: column;
+  padding: 8px 10px;
+  margin-bottom: 10px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background-color: var(--surface);
+}
+.find-row { display: flex; flex-direction: row; align-items: center; margin-bottom: 6px; }
+.find-row input { flex-grow: 1; flex-shrink: 1; min-width: 0px; margin-right: 8px; }
+#find-count { margin-top: 0; min-width: 64px; text-align: right; }
+.check { display: flex; flex-direction: row; align-items: center; padding: 2px 0; }
+.check-box {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 14px;
+  height: 14px;
+  border-radius: 3px;
+  border: 1.5px solid var(--line-strong);
+  margin-right: 7px;
+}
+.check-tick { width: 6px; height: 6px; border-radius: 1px; background-color: #ffffff; opacity: 0; }
+.check.active .check-box { background-color: var(--accent); border-color: var(--accent); }
+.check.active .check-tick { opacity: 1; }
+.check-label { font-size: 11px; color: var(--text-2); }
+
+.cue-row.match { background-color: var(--accent-tint); border-left: 3px solid var(--accent); padding-left: 7px; }
+.cue-row.match .cue-text { background-color: var(--accent-tint); border-color: var(--accent-tint); }
+
+#cue-list {
+  display: flex;
+  flex-direction: column;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background-color: var(--surface);
+  flex-shrink: 0;
+}
+.cue-row {
+  display: flex;
+  flex-direction: column;
+  padding: 8px 10px;
+  border-bottom: 1px solid var(--line);
+}
+.cue-row:last-child { border-bottom: 0px solid var(--line); }
+.cue-row:hover { background-color: var(--surface-hover); }
+.cue-top { display: flex; flex-direction: row; align-items: center; margin-bottom: 4px; }
+.cue-time {
+  font-size: 10px;
+  color: var(--text-3);
+  padding: 1px 6px;
+  border-radius: 4px;
+  background-color: var(--inset);
+  flex-grow: 0;
+}
+.cue-spacer { flex-grow: 1; }
+.cue-tools { display: flex; flex-direction: row; opacity: 0; }
+.cue-row:hover .cue-tools { opacity: 1; }
+.cue-tool { font-size: 11px; color: var(--text-2); padding: 1px 6px; border-radius: 4px; margin-left: 2px; }
+.cue-tool:hover { color: #ffffff; background-color: var(--line-strong); }
+.cue-tool.danger:hover { background-color: var(--danger-tint); color: var(--danger); }
+.cue-text {
+  font-size: 13px;
+  color: var(--text);
+  background-color: var(--surface);
+  border: 1px solid var(--surface);
+  border-radius: 5px;
+  padding: 4px 6px;
+  resize: none;
+  overflow: hidden;
+}
+.cue-row:hover .cue-text { background-color: var(--surface-hover); border-color: var(--surface-hover); }
+.cue-text:focus { background-color: var(--inset); border-color: var(--accent); }
+
+#review-actions { display: flex; flex-direction: row; align-items: center; }
+#btn-place { flex-grow: 1; margin-top: 0; margin-right: 8px; }
+
+/* ---------- Settings ---------- */
+#key-row { display: flex; flex-direction: row; align-items: center; }
+#inp-key { flex-grow: 1; font-size: 11px; margin-right: 10px; }
+#key-status-row { display: flex; flex-direction: row; align-items: center; margin-top: 8px; }
+#key-status { flex-grow: 1; margin-top: 0; }
+#key-status.ok { color: var(--success); }
+#key-status.bad { color: var(--danger); }
+
+.section-label-row { display: flex; flex-direction: row; align-items: center; }
+/* Explicit margins: the label is a :first-child here, which would
+   otherwise get the tight top margin meant for a screen's first label. */
+.section-label-row .section-label { flex-grow: 1; margin-top: 14px; }
+.section-label-row .footnote { margin-top: 14px; margin-bottom: 7px; }
+#inp-keyterms { height: 74px; resize: none; }
+#keyterms-note { margin-top: 5px; }
+
+#usage-card {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  margin-top: 18px;
+  padding: 10px 12px;
+  border-radius: 8px;
+  border: 1px solid var(--line);
+  background-color: var(--surface);
+}
+.usage-label { font-size: 12px; color: var(--text-2); flex-grow: 1; }
+#usage-val { font-size: 12px; font-weight: 600; }
+
+/* Last, and specific enough to beat every display rule above
+   (no !important — UXP support for it isn't documented). */
+.hidden,
+.icon-btn.hidden,
+.ghost-btn.hidden,
+.link-btn.hidden,
+.screen.hidden,
+#notice.hidden,
+#notice-detail.hidden,
+#resume-card.hidden,
+#save-menu.hidden,
+#cost-x2.hidden,
+.menu-item.hidden,
+.step.hidden,
+.seg.hidden,
+#custom-panel.hidden { display: none; }
+
+#version-line { margin-top: 18px; }
+
+/* ---------- Narrow panels ---------- */
+/* Below ~340px the 4-up pacing control and the script toggle run out of
+   room for their subtitles; drop them rather than wrap. */
+@media (max-width: 340px) {
+  .seg .seg-sub { display: none; }
+  .seg-item { padding: 6px 2px; }
+  #seg-pace .seg-title { font-size: 11px; }
+  .ghost-label { display: none; }
+  .ghost-btn { padding: 6px 7px; }
+  #preview-frame { height: 96px; }
+  .screen-scroll { padding: 10px 10px 14px 10px; }
+  #topbar, .screen-footer { padding-left: 10px; padding-right: 10px; }
+  #notice { width: calc(100% - 20px); }
+}

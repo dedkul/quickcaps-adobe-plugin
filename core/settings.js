@@ -88,7 +88,9 @@ window.QCSettings = (function () {
       if (!stored.pace && raw) s.pace = paceFor(s);
       return s;
     } catch (e) {
-      return Object.assign({}, DEFAULTS);
+      // Fresh copies of the nested objects, so updating usage never
+      // changes DEFAULTS itself.
+      return Object.assign({}, DEFAULTS, { usage: { month: "", seconds: 0 }, update: Object.assign({}, DEFAULTS.update) });
     }
   }
 

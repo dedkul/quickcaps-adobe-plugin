@@ -53,10 +53,7 @@
       "schemes": [
         "https"
       ],
-      "domains": [
-        "https://x.com",
-        "https://github.com"
-      ]
+      "extensions": []
     },
     "localFileSystem": "plugin"
   }

@@ -1,44 +1,97 @@
 # QuickCaps
 
-**Hindi, Hinglish, and English captions inside Adobe Premiere Pro. Free.**
+**Captions in Hindi, Hinglish, English, and 20 more Indian languages, right inside Adobe Premiere Pro. Free.**
 
-Pick your audio, click Generate, and get captions timed to the speech. Fix
-anything on the review screen, then add them to your timeline. Powered by
-[Sarvam AI](https://www.sarvam.ai/), built for Indian languages and
-Hindi-English mixing.
+Pick your audio, click **Generate captions**, and get captions timed to the
+speech. Fix anything you like, then add them to your timeline. Powered by
+[Sarvam AI](https://www.sarvam.ai/), which is built for Indian languages and
+for the way we actually mix them.
 
 [**Download**](https://github.com/dedkul/quickcaps-adobe-plugin/releases/latest) ·
 [Website](https://dedkul.github.io/quickcaps-adobe-plugin/) ·
-[Report a problem](https://github.com/dedkul/quickcaps-adobe-plugin/issues)
+[Follow @feat_ashish on X](https://x.com/feat_ashish) for updates and new features
 
 <p>
-  <img src="docs/img/panel-main.png" width="300" alt="QuickCaps panel: caption source, script, and pacing, with a cost estimate" />
+  <img src="docs/img/panel-main.png" width="260" alt="QuickCaps main screen: caption source, spoken language, caption script, and pacing" />
   &nbsp;
-  <img src="docs/img/panel-review.png" width="300" alt="Review screen: timed Hindi captions with find and replace" />
+  <img src="docs/img/panel-review.png" width="260" alt="Review screen: timed captions you can edit, split, merge, and search" />
+  &nbsp;
+  <img src="docs/img/panel-settings.png" width="260" alt="Settings: where you paste your Sarvam API key" />
 </p>
+
+## What it does
+
+- **23 languages.** Hindi, English, Marathi, Bengali, Gujarati, Tamil, Telugu,
+  Kannada, Malayalam, Punjabi, Odia, and 12 more. Or let it detect the language.
+- **Four ways to write them.** The language's own script (हिंदी), Roman
+  letters (Hinglish, Tanglish), Mixed ("मेरा phone number है"), or English
+  subtitles.
+- **Any part of your edit.** The whole sequence, your In to Out range, or
+  just the clips you select. Captions land exactly where the speech is.
+- **Your pace.** Fast for Reels, Relaxed for YouTube, or your own rules,
+  down to how many words show at once.
+- **Review before you place.** Edit any line, split, merge, delete, and find
+  and replace across every caption.
+- **Free clean-up.** Remove "umm" and "uh", bleep swear words, Reels style
+  (no full stops, optional ALL CAPS), and numbers as digits ("चार हज़ार पांच
+  सौ" becomes 4,500).
+- **English track.** Add English subtitles as a second track.
+- **Never lose work.** Your review is saved as you go. Export an `.srt` file
+  or a plain-text transcript for your YouTube description.
 
 ## Install
 
-Get the file for your Premiere version from the
+Download the file for your Premiere version from the
 [latest release](https://github.com/dedkul/quickcaps-adobe-plugin/releases/latest).
 Both work on Mac and Windows.
 
 | Premiere Pro | Download | How to install |
 | ------------ | -------- | -------------- |
 | 2026 | [QuickCaps-Premiere-2026.ccx](https://github.com/dedkul/quickcaps-adobe-plugin/releases/latest/download/QuickCaps-Premiere-2026.ccx) | Double-click it and Creative Cloud installs it. Open **Window → UXP Plugins → QuickCaps**. |
-| 2022 to 2025 | [QuickCaps-Premiere-2022-2025.zxp](https://github.com/dedkul/quickcaps-adobe-plugin/releases/latest/download/QuickCaps-Premiere-2022-2025.zxp) | Install with the free [ZXP Installer](https://aescripts.com/learn/zxp-installer/). Open **Window → Extensions → QuickCaps**. |
+| 2022 to 2025 | [QuickCaps-Premiere-2022-2025.zxp](https://github.com/dedkul/quickcaps-adobe-plugin/releases/latest/download/QuickCaps-Premiere-2022-2025.zxp) | Install it with the free [ZXP Installer](https://aescripts.com/learn/zxp-installer/). Open **Window → Extensions → QuickCaps**. |
 
-Then:
+When a new version comes out, QuickCaps shows a small note at the top of the
+panel with a download link.
 
-1. Create a Sarvam API key at [dashboard.sarvam.ai](https://dashboard.sarvam.ai).
-   New accounts get ₹100 of free credit, about three hours of captions.
-2. In QuickCaps, click **Settings**, paste the key, and click **Check key**.
-3. Open a sequence and click **Generate captions**.
+## Get your Sarvam API key (one time, about 2 minutes)
+
+QuickCaps doesn't listen to your audio itself. Sarvam AI does that, and an
+**API key** is how QuickCaps uses your Sarvam account. Think of it as a
+password made for apps: you paste it into QuickCaps once, and QuickCaps uses
+it every time you make captions. Sarvam bills your account directly, so
+QuickCaps never sees your money or your login.
+
+1. Go to [dashboard.sarvam.ai](https://dashboard.sarvam.ai) and sign up. New
+   accounts get ₹100 of free credit, about three hours of captions.
+2. In the dashboard, find the **API keys** section and create a key.
+3. Copy the key. It's a long line of letters and numbers.
+4. In QuickCaps, click **Settings**, paste the key, and click **Check key**.
+   "Key works" means you're set.
+
+**Keep your key private.**
+
+- Don't share it, and don't post it in a screenshot, video, or tutorial.
+  Anyone with your key can use your Sarvam credit.
+- If it ever gets out, delete it in the Sarvam dashboard and create a new one.
+- QuickCaps keeps the key on your computer and sends it only to Sarvam.
+
+## Make captions
+
+1. Open your sequence in Premiere.
+2. In QuickCaps, choose the **caption source**, the **spoken language**, and
+   the **caption script**. The preview shows how your captions will break.
+3. Click **Generate captions** and wait a moment.
+4. Check the captions on the review screen and fix anything you like.
+5. Click **Add to timeline** (Premiere 2022 to 2025) or **Add to project**
+   (Premiere 2026). On 2026, drag the new caption item to the very start of
+   your timeline (00:00) and it lines up with the speech.
+6. To change the font, size, or colour, select a caption and use
+   **Properties → Track Style**.
 
 ## What it costs
 
-The plugin is free and open source. Transcription is billed by Sarvam to your
-own account at ₹30 per hour of audio, by the second:
+QuickCaps is free and open source. Sarvam charges your own account ₹30 per
+hour of audio, by the second:
 
 | Video | Sarvam cost |
 | ----- | ----------- |
@@ -46,27 +99,15 @@ own account at ₹30 per hour of audio, by the second:
 | 10-minute vlog | ₹5 |
 | 1-hour podcast | ₹30 |
 
-Adding the English track doubles it. Every other option is free. Your audio
-goes from your computer straight to Sarvam; QuickCaps has no server and
-collects nothing.
-
-## Features
-
-- Four caption scripts: हिंदी, Hinglish (Roman letters), Mixed ("मेरा phone
-  number है"), or English subtitles.
-- Whole sequence, In to Out, or selected clips, timed to sequence timecode.
-- Caption pace presets (Fast for Reels, Relaxed for YouTube) or custom.
-- Your names and words, sent to Sarvam so they're spelled your way.
-- Review screen with editing, split, merge, and find and replace.
-- Optional clean-up: remove fillers, bleep swearing, Reels style, ALL CAPS.
-- Optional English track alongside Hindi (doubles the Sarvam cost).
-- Saves your review as you go; save as `.srt` or a plain-text transcript.
+The panel shows the cost before you click Generate. The English track doubles
+it; everything else is free. Your audio goes from your computer straight to
+Sarvam. QuickCaps has no server and collects nothing.
 
 ## Troubleshooting
 
-**The panel is blank after installing (Premiere 2022 to 2025).** A known Adobe
-issue with some installers. Run this, then restart Premiere (use `12`
-instead of `11` for Premiere 2025):
+**The panel is blank (Premiere 2022 to 2025).** A known Adobe issue with some
+installers. Run this, then restart Premiere (use `12` instead of `11` for
+Premiere 2025):
 
 - Mac, in Terminal: `defaults write com.adobe.CSXS.11 PlayerDebugMode 1`
 - Windows, in Command Prompt: `reg add HKCU\Software\Adobe\CSXS.11 /v PlayerDebugMode /t REG_SZ /d 1 /f`
@@ -75,79 +116,68 @@ instead of `11` for Premiere 2025):
 dashboard.sarvam.ai. QuickCaps only works with Sarvam keys, not OpenAI,
 Gemini, or other AI keys.
 
-**Captions on Premiere 2026 aren't on the timeline.** Premiere 2026's plugin
-system can't create caption tracks yet. The captions are in your Project
+**"Your Sarvam credit has run out."** Add credit in the Sarvam dashboard,
+then try again.
+
+**The captions aren't on my timeline (Premiere 2026).** Premiere 2026 doesn't
+let plugins create caption tracks yet. The captions are in your Project
 panel, already timed: drag them to the start (00:00) of the timeline.
 
-Something else? [Open an issue](https://github.com/dedkul/quickcaps-adobe-plugin/issues)
-with a screenshot.
+Something else, or an idea for a feature? Message
+[@feat_ashish on X](https://x.com/feat_ashish) with a screenshot.
 
 ---
 
 ## For developers
 
+<details>
+<summary>Project layout, building, and releasing</summary>
+
 ### Project layout
 
-- `core/`: everything that doesn't touch Premiere directly. The panel UI, the
-  Sarvam client, caption building, editing, and clean-up. Shared by both hosts.
-- `hosts/uxp/`: the adapter for Premiere Pro 2026 (25.6 and later), using
-  Adobe's UXP plugin API.
-- `hosts/cep/`: the build for Premiere Pro 2022 to 2025 (CEP + ExtendScript).
+- `core/`: everything that doesn't touch Premiere directly. The panel UI,
+  the Sarvam client, languages, caption building, editing, clean-up, and the
+  update check. Shared by both versions.
+- `hosts/uxp/`: Premiere Pro 2026 (25.6 and later), using Adobe's UXP API.
+- `hosts/cep/`: Premiere Pro 2022 to 2025 (CEP and ExtendScript).
 - `presets/`: the audio export preset (WAV, mono, 16 kHz).
 - `scripts/`: build, local install, and packaging.
-- `docs/`: the website (GitHub Pages). `promo.html` is a 16:9 promo loop.
-- `tests/`: `node tests/core.test.js`.
+- `docs/`: the website (GitHub Pages).
+- `tests/`: run `node tests/core.test.js`.
 
 ### Build and load (Premiere 2026)
 
 Install the UXP Developer Tool from the Creative Cloud app, and in Premiere
-enable **Settings → Plugins → Developer mode**. Then:
-
-```
-node scripts/build.js uxp
-```
-
-In the UXP Developer Tool: **Add Plugin** → select `dist/uxp` → **Load**.
-After a code change, rebuild, then **Unload** and **Load**.
+turn on **Settings → Plugins → Developer mode**. Then run
+`node scripts/build.js uxp`, and in the UXP Developer Tool choose
+**Add Plugin** → `dist/uxp` → **Load**. After a code change, build again,
+then **Unload** and **Load**.
 
 The plugin ID is `com.quickcaps.panel`. Don't change it, or installed copies
 won't update.
 
 ### Build and load (Premiere 2022 to 2025)
 
-```
-bash scripts/install-cep-dev.sh
-```
+`bash scripts/install-cep-dev.sh` links `dist/cep` into Adobe's extensions
+folder and turns on debug mode so Premiere loads the unsigned panel. Undo it
+with `bash scripts/install-cep-dev.sh --remove`.
 
-This links `dist/cep` into Adobe's extensions folder and turns on CEP debug
-mode so Premiere loads the unsigned panel. Undo with
-`bash scripts/install-cep-dev.sh --remove`.
+### How it works
 
-### How captions reach the timeline
-
-Captions are timed to sequence time: the transcript is shifted by where the
-export started (the In point, or the first selected clip). So the caption
-file always belongs at 00:00.
-
-- **2022 to 2025:** ExtendScript's `Sequence.createCaptionTrack` places the
-  captions on a new caption track automatically.
-- **2026:** UXP can't create caption tracks, so the captions are imported
-  into the Project panel and dragged to 00:00.
-
-Styling is Premiere's own: select a caption and use **Properties → Track
-Style**.
-
-### Caption scripts
-
-| Option   | Sarvam mode | Result |
-| -------- | ----------- | ------ |
-| हिंदी     | transcribe  | Devanagari |
-| Hinglish | translit    | Roman letters |
-| Mixed    | codemix     | Devanagari with English words in English |
-| English  | translate   | English subtitles |
-
-Audio is cut into 28-second parts (Sarvam's limit is 30), sent three at a
-time, and retried on rate limits.
+- Audio is exported from Premiere, cut into 28-second parts (Sarvam's limit
+  is 30), sent three at a time, and retried on rate limits.
+- Each caption script is a Sarvam mode: own script = `transcribe`, Roman =
+  `translit`, Mixed = `codemix`, English = `translate`. English audio is
+  simply transcribed.
+- Sarvam times phrases, not words, so word timings inside a phrase are
+  estimated from word length.
+- Captions are timed to the sequence, so the caption file always belongs at
+  00:00. On 2022 to 2025, ExtendScript's `createCaptionTrack` places it
+  automatically; on 2026 it's imported for the user to drag in.
+- The update check asks GitHub for the latest release at most once a day.
+- The browser preview: run `python3 -m http.server 8642` and open
+  `http://localhost:8642/core/ui/index.html` (mock data). Add `?update=demo`
+  to see the update note.
 
 ### Releasing
 
@@ -155,22 +185,15 @@ time, and retried on rate limits.
    `hosts/cep/CSXS/manifest.xml`.
 2. `bash scripts/package.sh` builds and signs
    `release/QuickCaps-Premiere-2022-2025.zxp`. It needs Adobe's
-   `ZXPSignCmd` in `tools/` and the certificate in `signing/`. Both are kept
-   out of git. **Always sign with the same certificate.**
+   `ZXPSignCmd` in `tools/` and the certificate in `signing/`, both kept out
+   of git. **Always sign with the same certificate.**
 3. `node scripts/build.js uxp`, then in the UXP Developer Tool: ••• on
    QuickCaps → **Package**. Rename the file to `QuickCaps-Premiere-2026.ccx`.
 4. On GitHub, create a release tagged `v<version>` and attach both files with
-   exactly those names. The website's download buttons always point to the
-   latest release, so nothing else needs editing.
+   exactly those names. The download links always point to the latest
+   release, and the panel's update note picks it up within a day.
 
-### Browser preview (no Premiere needed)
-
-```
-python3 -m http.server 8642
-```
-
-Then open `http://localhost:8642/core/ui/index.html` (panel with mock data)
-or `http://localhost:8642/docs/` (website).
+</details>
 
 ## License
 

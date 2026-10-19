@@ -20,6 +20,7 @@
     track: "main", // track shown on the review screen: "main" | "en"
     seq: null,
     genScript: S.script, // caption script the current captions were made with
+    genLang: S.language, // spoken language they were made from
     polish: {}, // extras in effect when the captions were made
     cancel: false,
     busy: false,
@@ -147,17 +148,55 @@
     });
   }
 
-  // Caption script -> Sarvam speech-to-text mode. All four are the same
-  // per-second price; Hinglish uses "translit" (Roman output straight from
-  // speech) rather than the separately billed transliteration service.
-  const MODES = { hi: "transcribe", rom: "translit", mix: "codemix", en: "translate" };
-  const SCRIPT_NAMES = { hi: "हिंदी", rom: "Hinglish", mix: "Mixed", en: "English" };
+  /* ---------------- Language + caption script ---------------- */
+
+  // The script captions will actually come out in: English audio always
+  // gives English, whatever was picked for other languages.
+  function effScript() {
+    return QCLangs.effectiveScript(S.language, S.script);
+  }
+
+  // Script buttons are renamed per language (हिंदी / Hinglish, தமிழ் /
+  // Tanglish, মরাঠি / Roman…); English audio shows only "English".
+  function paintScript() {
+    const opts = QCLangs.scriptOptions(S.language);
+    all("#seg-script .seg-item").forEach(function (b) {
+      const key = b.getAttribute("data-val");
+      const o = opts.filter(function (x) { return x.key === key; })[0];
+      b.classList.toggle("hidden", !o);
+      if (!o) return;
+      b.querySelector(".seg-title").textContent = o.title;
+      b.querySelector(".seg-sub").textContent = o.sub;
+    });
+    paintSeg("seg-script", effScript());
+    $("script-hint").textContent = QCLangs.scriptHint(S.language, effScript());
+    const l = QCLangs.get(S.language);
+    $("lang-native").textContent = l && !l.auto && !l.english ? l.native : "";
+  }
 
   wireSeg("seg-script", function (val) {
     S.script = val;
     QCSettings.save(S);
-    paintSeg("seg-script", val);
+    paintScript();
     paintExtras();
+    previewIndex = 0;
+    paintPreview();
+  });
+
+  const langSelect = $("inp-language");
+  setSelect(langSelect, S.language);
+  langSelect.addEventListener("change", function () {
+    const v = langSelect.value;
+    // The menu's divider lines aren't languages.
+    if (!QCLangs.isKnown(v)) {
+      setSelect(langSelect, S.language);
+      return;
+    }
+    S.language = v;
+    QCSettings.save(S);
+    paintScript();
+    paintExtras();
+    previewIndex = 0;
     paintPreview();
   });
 
@@ -165,7 +204,15 @@
 
   // An English track on English captions would be the same thing twice.
   function bilingualOn() {
-    return !!S.bilingual && S.script !== "en";
+    return !!S.bilingual && effScript() !== "en";
+  }
+
+  // What "Numbers as digits" will do for the chosen language.
+  function digitsHint() {
+    const l = QCLangs.get(S.language);
+    if (l && l.english) return "“four thousand five hundred” becomes 4,500";
+    if (QCNumbers.coversLanguage(S.language)) return "“चार हज़ार पांच सौ” becomes 4,500, and 1,50,000 for lakhs";
+    return "For " + (l ? l.name : "this language") + ", only English number words, for now";
   }
 
   function paintExtras() {
@@ -174,10 +221,11 @@
       row.classList.toggle("on", k === "bilingual" ? bilingualOn() : !!S[k]);
     });
     const bi = document.querySelector('#extras [data-k="bilingual"]');
-    bi.classList.toggle("disabled", S.script === "en");
-    bi.querySelector(".extra-sub").textContent = S.script === "en"
+    bi.classList.toggle("disabled", effScript() === "en");
+    bi.querySelector(".extra-sub").textContent = effScript() === "en"
       ? "Your captions are already in English"
       : "A second caption track with English subtitles";
+    $("digits-sub").textContent = digitsHint();
     $("opt-caps").classList.toggle("active", !!S.caps);
     paintCost();
   }
@@ -225,25 +273,24 @@
 
   /* ---------------- Pacing + preview ---------------- */
 
-  // A sample sentence, "spoken" at roughly natural Hindi speed, run through
-  // the same caption builder the real transcript uses.
-  const SAMPLE = {
-    hi: "नमस्ते दोस्तों, आज हम बात करेंगे एक ऐसे टूल के बारे में जो आपका घंटों का काम मिनटों में कर देगा। चलिए शुरू करते हैं।",
-    rom: "namaste doston, aaj hum baat karenge ek aise tool ke baare mein jo aapka ghanton ka kaam minton mein kar dega. chaliye shuru karte hain.",
-    mix: "नमस्ते दोस्तों, आज हम बात करेंगे एक ऐसे tool के बारे में जो आपका घंटों का काम minutes में कर देगा। चलिए start करते हैं।",
-    en: "Hello friends, today we'll talk about a tool that turns hours of work into minutes. Let's get started.",
-  };
+  // A sample sentence in the chosen language and script, "spoken" at
+  // roughly natural speed, run through the same caption builder the real
+  // transcript uses.
   let previewIndex = 0;
+
+  function cueOptions() {
+    return { maxChars: S.maxChars, maxLines: S.maxLines, minDur: S.minDur, maxDur: S.maxDur, maxWords: S.maxWords };
+  }
 
   function previewCues() {
     const words = [];
     let t = 0;
-    (SAMPLE[S.script] || SAMPLE.hi).split(" ").forEach(function (w) {
+    QCLangs.sample(S.language, S.script).split(" ").forEach(function (w) {
       const d = 0.18 + w.length * 0.035;
       words.push({ text: w, start: t, end: t + d });
       t += d + 0.08;
     });
-    return QCSrt.buildCues(words, { maxChars: S.maxChars, maxLines: S.maxLines, minDur: S.minDur, maxDur: S.maxDur });
+    return QCSrt.buildCues(words, cueOptions());
   }
 
   function paintPreview() {
@@ -259,6 +306,24 @@
     previewIndex += 1;
     paintPreview();
   });
+
+  // Words per caption: Auto (fit by length), or a hard limit of 1-6.
+  function paintWords() {
+    const n = S.maxWords;
+    $("words-val").textContent = n ? n + (n === 1 ? " word" : " words") : "Auto";
+    $("words-sub").textContent = n ? "At most " + n + ", even if more would fit" : "Auto fits by length";
+    $("words-minus").classList.toggle("disabled", !n);
+    $("words-plus").classList.toggle("disabled", n >= QCSettings.MAX_WORDS);
+  }
+  function setWords(n) {
+    S.maxWords = Math.max(0, Math.min(QCSettings.MAX_WORDS, n));
+    QCSettings.save(S);
+    previewIndex = 0;
+    paintWords();
+    paintPreview();
+  }
+  on($("words-minus"), function () { if (S.maxWords) setWords(S.maxWords - 1); });
+  on($("words-plus"), function () { setWords(S.maxWords + 1); });
 
   function paintPace() {
     paintSeg("seg-pace", S.pace);
@@ -349,6 +414,7 @@
           savedAt: Date.now(),
           seqName: (state.seq && state.seq.name) || "",
           genScript: state.genScript,
+          genLang: state.genLang,
           polish: state.polish,
           cues: slimCues(state.cues),
           cuesEn: state.cuesEn ? slimCues(state.cuesEn) : null,
@@ -406,6 +472,7 @@
     state.cues = d.cues;
     state.cuesEn = d.cuesEn;
     state.genScript = d.genScript;
+    state.genLang = d.genLang || "hi-IN"; // drafts from before v2 were Hindi
     state.polish = d.polish || {};
     state.track = "main";
     hideNotice();
@@ -494,11 +561,11 @@
     return words;
   }
 
-  function buildTrack(words, polish, script) {
-    const cleaned = QCPolish.cleanWords(words, polish);
-    const cues = QCSrt.buildCues(cleaned, {
-      maxChars: S.maxChars, maxLines: S.maxLines, minDur: S.minDur, maxDur: S.maxDur,
-    });
+  // lang: the language the words are in (the English track is English
+  // whatever was spoken), so "Numbers as digits" reads the right words.
+  function buildTrack(words, polish, script, lang) {
+    const cleaned = QCPolish.cleanWords(words, Object.assign({ lang: lang }, polish));
+    const cues = QCSrt.buildCues(cleaned, cueOptions());
     return QCPolish.finishCues(cues, polish, script);
   }
 
@@ -523,7 +590,8 @@
     }
 
     const bilingual = bilingualOn();
-    const polish = { reels: !!S.reels, caps: !!(S.reels && S.caps), fillers: !!S.fillers, bleep: !!S.bleep };
+    const polish = { reels: !!S.reels, caps: !!(S.reels && S.caps), fillers: !!S.fillers, bleep: !!S.bleep, digits: !!S.digits };
+    const script = effScript();
     state.busy = true;
     state.cancel = false;
     show("progress");
@@ -538,7 +606,7 @@
       note("");
 
       t0 = stepActive("transcribe");
-      const words = await runPass(audio, MODES[S.script] || "transcribe", 0.1, bilingual ? 0.5 : 0.85, "Transcribing");
+      const words = await runPass(audio, QCLangs.modeFor(S.language, script), 0.1, bilingual ? 0.5 : 0.85, "Transcribing");
       stepDone("transcribe", t0);
 
       let wordsEn = null;
@@ -550,10 +618,11 @@
 
       t0 = stepActive("build");
       state.polish = polish;
-      state.genScript = S.script;
-      const cues = buildTrack(words, polish, S.script);
+      state.genScript = script;
+      state.genLang = S.language;
+      const cues = buildTrack(words, polish, script, script === "en" ? "en-IN" : S.language);
       if (!cues.length) throw new Error("No speech was found in this audio. Check that the audio tracks aren't muted and the right range is chosen, then try again.");
-      const cuesEn = wordsEn ? buildTrack(wordsEn, polish, "en") : null;
+      const cuesEn = wordsEn ? buildTrack(wordsEn, polish, "en", "en-IN") : null;
       stepDone("build", t0);
       pbar(1);
       note("");
@@ -599,18 +668,23 @@
     return n + (n === 1 ? " caption" : " captions");
   }
 
+  // "हिंदी", "Tanglish", "English"… for the captions on review.
+  function trackName() {
+    return QCLangs.scriptName(state.genLang || "hi-IN", state.genScript);
+  }
+
   function renderReview() {
     const cues = activeCues();
     const hasEn = !!state.cuesEn;
     $("seg-track").classList.toggle("hidden", !hasEn);
     if (hasEn) {
-      $("track-main-title").textContent = (SCRIPT_NAMES[state.genScript] || "Main") + " track";
+      $("track-main-title").textContent = trackName() + " track";
       $("track-main-sub").textContent = countLabel(state.cues.length);
       $("track-en-sub").textContent = countLabel(state.cuesEn.length);
       paintSeg("seg-track", state.track);
     }
     $("review-count").textContent = countLabel(cues.length);
-    $("save-srt-hint").textContent = SCRIPT_NAMES[state.genScript] || "";
+    $("save-srt-hint").textContent = trackName();
     $("save-srt-en").classList.toggle("hidden", !hasEn);
 
     const list = $("cue-list");
@@ -747,7 +821,7 @@
 
   // Every track the user has, in timeline order (main first).
   function tracksToPlace() {
-    const tracks = [{ label: SCRIPT_NAMES[state.genScript], srt: srtFor(state.cues, "hi") }];
+    const tracks = [{ label: trackName(), srt: srtFor(state.cues, "hi") }];
     if (state.cuesEn) tracks.push({ label: "English", srt: srtFor(state.cuesEn, "hi") });
     return tracks;
   }
@@ -913,24 +987,66 @@
   $("inp-model").addEventListener("change", paintKeyterms);
   paintKeyterms();
 
-  setSelect($("inp-language"), S.language);
-  $("inp-language").addEventListener("change", function () { S.language = $("inp-language").value; QCSettings.save(S); });
-
   function paintUsage() { $("usage-val").textContent = QCSettings.usageLabel(S); }
 
   // Handy when friends report a problem: "which version are you on?"
   $("version-line").textContent = "QuickCaps " + (host.pluginVersion ? "v" + host.pluginVersion : "preview");
 
+  /* ---------------- Links + updates ---------------- */
+
+  const X_PROFILE = "https://x.com/feat_ashish";
+
+  // Each host opens the default browser its own way (CEP: cep.util,
+  // UXP: shell.openExternal); the browser preview opens a new tab.
+  async function openLink(url) {
+    try {
+      if (host.openUrl) await host.openUrl(url);
+      else window.open(url, "_blank");
+    } catch (e) {
+      notice("info", "Couldn't open your browser. Go to " + url.replace(/^https:\/\//, "") + " instead.", null, null, true);
+    }
+  }
+  on($("btn-follow"), function () { openLink(X_PROFILE); });
+  on($("btn-request"), function () { openLink(X_PROFILE); });
+
+  function paintUpdate() {
+    const r = QCUpdates.pending(host.pluginVersion, S.update);
+    $("update-card").classList.toggle("hidden", !r);
+    if (r) $("update-title").textContent = "QuickCaps " + r.version + " is out";
+  }
+  on($("btn-update"), function () {
+    const r = QCUpdates.pending(host.pluginVersion, S.update);
+    openLink(r ? r.url : QCUpdates.RELEASES_PAGE);
+  });
+  on($("btn-update-later"), function () {
+    QCUpdates.dismiss(S.update);
+    QCSettings.save(S);
+    paintUpdate();
+  });
+
+  // At most once a day (the result is remembered in settings), and only
+  // where the plugin knows its own version.
+  async function checkForUpdate() {
+    if (!host.pluginVersion) return;
+    const fetchFn = host.fetch || function (u, i) { return fetch(u, i); };
+    await QCUpdates.check(host.pluginVersion, S.update, fetchFn);
+    QCSettings.save(S);
+    paintUpdate();
+  }
+
   /* ---------------- Init ---------------- */
 
   paintScope();
-  paintSeg("seg-script", S.script);
+  paintScript();
   paintExtras();
+  paintWords();
   paintPace();
   paintKeyStatus();
   paintUsage();
   show("main");
+  paintUpdate();
   refreshSequence();
+  setTimeout(checkForUpdate, 1500);
   setInterval(function () {
     if (state.screen === "main" && !state.busy) refreshSequence();
   }, 4000);

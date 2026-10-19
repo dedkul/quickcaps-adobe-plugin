@@ -45,8 +45,15 @@
   "requiredPermissions": {
     "network": {
       "domains": [
-        "https://api.sarvam.ai"
+        "https://api.sarvam.ai",
+        "https://api.github.com"
       ]
+    },
+    "launchProcess": {
+      "schemes": [
+        "https"
+      ],
+      "extensions": []
     },
     "localFileSystem": "plugin"
   }

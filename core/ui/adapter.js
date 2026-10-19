@@ -4,7 +4,11 @@
  *
  * The build script replaces this file with hosts/uxp/adapter.js or
  * hosts/cep/adapter.js. Every adapter implements the same interface:
- *   mock:boolean, getSequenceInfo, exportAudio, placeCaptions, saveSrt
+ *   mock:boolean, getSequenceInfo, exportAudio, placeCaptions, saveSrt,
+ *   openUrl
+ *
+ * Preview the "new version" bar with ?update=demo (pretends to be v0.9.0
+ * and that GitHub has v0.10.0).
  */
 window.QCHost = (function () {
   // [Devanagari, roman] word pairs, aligned one-to-one.
@@ -64,11 +68,35 @@ window.QCHost = (function () {
     return new Promise(function (r) { setTimeout(r, ms); });
   }
 
+  const updateDemo = /update=demo/.test(location.search);
+  if (updateDemo) {
+    try {
+      // Start each demo from a fresh daily check.
+      const s = JSON.parse(localStorage.getItem("quickcaps.settings") || "{}");
+      delete s.update;
+      localStorage.setItem("quickcaps.settings", JSON.stringify(s));
+    } catch (e) {
+      /* no storage: the demo still works for this load */
+    }
+  }
+
   return {
     mock: true,
     name: "browser-mock",
     // Preview the CEP build's one-click placement with ?host=cep
     placesOnTimeline: /host=cep/.test(location.search),
+    pluginVersion: updateDemo ? "0.9.0" : undefined,
+    fetch: updateDemo
+      ? async function () {
+        return { ok: true, status: 200, json: async function () {
+          return { tag_name: "v0.10.0", html_url: "https://github.com/dedkul/quickcaps-adobe-plugin/releases/latest" };
+        } };
+      }
+      : undefined,
+
+    openUrl: async function (url) {
+      window.open(url, "_blank");
+    },
 
     getSequenceInfo: async function () {
       return {

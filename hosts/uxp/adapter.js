@@ -187,6 +187,13 @@
       return results;
     },
 
+    // Needs "launchProcess" for these sites in manifest.json. Premiere may
+    // ask the user once before opening the browser.
+    async openUrl(url) {
+      const res = await require("uxp").shell.openExternal(url, "Opens QuickCaps links in your browser.");
+      if (typeof res === "string" && res) throw new Error(res);
+    },
+
     async saveSrt(srtText, suggestedName) {
       const dataFolder = await localFileSystem.getEntryWithUrl("plugin-data:/");
       const file = await replaceFile(dataFolder, suggestedName || "captions.srt", function (f) {

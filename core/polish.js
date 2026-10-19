@@ -4,6 +4,7 @@
  *   bleep    mask common profanity as ****
  *   reels    no full stop / danda at the end of a caption
  *   caps     ALL CAPS for Roman and English text (Devanagari has no case)
+ *   digits   number words as digits, 4,500 and 1,50,000 (see numbers.js)
  * Plus transcript() for the plain-text export.
  */
 window.QCPolish = (function () {
@@ -38,6 +39,7 @@ window.QCPolish = (function () {
   const TRAIL_PUNCT = /[,.।!?]+$/;
 
   // words: [{text, start, end}] straight from Sarvam (after phrase splitting).
+  // opts.lang (the spoken language) decides which number words `digits` knows.
   function cleanWords(words, opts) {
     const out = [];
     words.forEach(function (w) {
@@ -55,7 +57,7 @@ window.QCPolish = (function () {
       if (opts.bleep) text = nfc(text).replace(BAD, MASK);
       out.push({ text: text, start: w.start, end: w.end, rom: w.rom });
     });
-    return out;
+    return opts.digits && window.QCNumbers ? QCNumbers.wordsToDigits(out, opts.lang) : out;
   }
 
   function finishText(text, opts, upper) {

@@ -49,6 +49,9 @@ copy(path.join(root, "core", "cues.js"), "cues.js");
 copy(path.join(root, "core", "sarvam.js"), "sarvam.js");
 copy(path.join(root, "core", "settings.js"), "settings.js");
 copy(path.join(root, "core", "polish.js"), "polish.js");
+copy(path.join(root, "core", "langs.js"), "langs.js");
+copy(path.join(root, "core", "numbers.js"), "numbers.js");
+copy(path.join(root, "core", "updates.js"), "updates.js");
 copy(path.join(root, "core", "ui", "styles.css"), "styles.css");
 copy(path.join(root, "core", "ui", "app.js"), "app.js");
 

@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8" />
 <title>QuickCaps</title>
-<link rel="stylesheet" href="styles.css?v=17" />
+<link rel="stylesheet" href="styles.css?v=18" />
 </head>
 <!--
   Built for Premiere's UXP renderer, which is not a full browser: no
@@ -67,6 +67,16 @@
   <div id="screen-main" class="screen">
     <div class="screen-scroll">
       <div class="col">
+        <!-- A newer QuickCaps is on GitHub (checked at most once a day). -->
+        <div id="update-card" class="hidden">
+          <div class="resume-text">
+            <div id="update-title" class="resume-title"></div>
+            <div class="choice-sub">Download it, then install it the same way as before.</div>
+          </div>
+          <div id="btn-update" class="link-btn" tabindex="0">Download</div>
+          <div id="btn-update-later" class="link-btn muted" tabindex="0">Later</div>
+        </div>
+
         <!-- Shown when an unfinished review was saved (survives closing Premiere). -->
         <div id="resume-card" class="hidden">
           <div class="resume-text">
@@ -102,11 +112,49 @@
           </div>
         </div>
 
+        <!-- Options are listed here (not built in JS) because UXP's select
+             is unreliable with options added later. Keep in step with
+             core/langs.js; tests/core.test.js checks they match. -->
+        <div class="section-label-row">
+          <div class="section-label">Spoken language</div>
+          <div id="lang-native" class="footnote"></div>
+        </div>
+        <select id="inp-language">
+          <option value="unknown">Detect automatically</option>
+          <option value="" disabled="disabled">──────────</option>
+          <option value="hi-IN">Hindi · हिंदी</option>
+          <option value="mr-IN">Marathi · मराठी</option>
+          <option value="bn-IN">Bengali · বাংলা</option>
+          <option value="gu-IN">Gujarati · ગુજરાતી</option>
+          <option value="ta-IN">Tamil · தமிழ்</option>
+          <option value="te-IN">Telugu · తెలుగు</option>
+          <option value="kn-IN">Kannada · ಕನ್ನಡ</option>
+          <option value="ml-IN">Malayalam · മലയാളം</option>
+          <option value="pa-IN">Punjabi · ਪੰਜਾਬੀ</option>
+          <option value="od-IN">Odia · ଓଡ଼ିଆ</option>
+          <option value="en-IN">English</option>
+          <option value="" disabled="disabled">── More languages ──</option>
+          <option value="as-IN">Assamese · অসমীয়া</option>
+          <option value="ur-IN">Urdu · اردو</option>
+          <option value="ne-IN">Nepali · नेपाली</option>
+          <option value="kok-IN">Konkani · कोंकणी</option>
+          <option value="ks-IN">Kashmiri · کٲشُر</option>
+          <option value="sd-IN">Sindhi · سنڌي</option>
+          <option value="sa-IN">Sanskrit · संस्कृतम्</option>
+          <option value="sat-IN">Santali · ᱥᱟᱱᱛᱟᱲᱤ</option>
+          <option value="mni-IN">Manipuri · মৈতৈলোন্</option>
+          <option value="brx-IN">Bodo · बड़ो</option>
+          <option value="mai-IN">Maithili · मैथिली</option>
+          <option value="doi-IN">Dogri · डोगरी</option>
+        </select>
+        <div class="footnote tight">The language people speak in this video.</div>
+
         <div class="section-label">Caption script</div>
+        <!-- Titles and subtitles are filled in per language by app.js. -->
         <div class="seg" id="seg-script">
           <div class="seg-item" data-val="hi" tabindex="0">
             <div class="seg-title">&#2361;&#2367;&#2306;&#2342;&#2368;</div>
-            <div class="seg-sub">Devanagari</div>
+            <div class="seg-sub">Hindi</div>
           </div>
           <div class="seg-item" data-val="rom" tabindex="0">
             <div class="seg-title">Hinglish</div>
@@ -121,6 +169,7 @@
             <div class="seg-sub">Translated</div>
           </div>
         </div>
+        <div id="script-hint" class="footnote tight"></div>
 
         <div class="section-label">Caption pacing</div>
         <div class="seg" id="seg-pace">
@@ -160,6 +209,22 @@
           </div>
         </div>
 
+        <div id="words-row">
+          <div class="words-text">
+            <div class="extra-name">Words per caption</div>
+            <div id="words-sub" class="extra-sub">Auto fits by length</div>
+          </div>
+          <div class="stepper">
+            <div id="words-minus" class="step-btn" tabindex="0" title="Fewer words">
+              <svg width="10" height="10" viewBox="0 0 10 10"><rect x="0" y="4.2" width="10" height="1.6" rx="0.8" fill="#c8c8c8" /></svg>
+            </div>
+            <div id="words-val">Auto</div>
+            <div id="words-plus" class="step-btn" tabindex="0" title="More words">
+              <svg width="10" height="10" viewBox="0 0 10 10"><rect x="0" y="4.2" width="10" height="1.6" rx="0.8" fill="#c8c8c8" /><rect x="4.2" y="0" width="1.6" height="10" rx="0.8" fill="#c8c8c8" /></svg>
+            </div>
+          </div>
+        </div>
+
         <!-- Live preview: how a caption breaks with the current pacing/script. -->
         <div id="preview-card">
           <div id="preview-frame">
@@ -194,6 +259,13 @@
             <div class="extra-text">
               <div class="extra-head"><div class="extra-name">Clean up fillers</div><div class="badge free">No extra cost</div></div>
               <div class="extra-sub">Removes umm, uh, hmm, अं</div>
+            </div>
+          </div>
+          <div class="extra" data-k="digits" tabindex="0">
+            <div class="switch"><div class="knob"></div></div>
+            <div class="extra-text">
+              <div class="extra-head"><div class="extra-name">Numbers as digits</div><div class="badge free">No extra cost</div></div>
+              <div id="digits-sub" class="extra-sub"></div>
             </div>
           </div>
           <div class="extra" data-k="bleep" tabindex="0">
@@ -334,30 +406,37 @@
         <textarea id="inp-keyterms" placeholder="One per line, e.g.&#10;QuickCaps&#10;Ashish&#10;Bengaluru"></textarea>
         <div id="keyterms-note" class="footnote"></div>
 
-        <div class="section-label">Spoken language</div>
-        <select id="inp-language">
-          <option value="hi-IN">Hindi (hi-IN) · code-mixed</option>
-          <option value="unknown">Auto-detect</option>
-        </select>
-
         <div id="usage-card">
           <div class="usage-label">Usage this month</div>
           <div id="usage-val">0 min · ~₹0</div>
         </div>
         <div class="footnote">Estimated from audio length at ₹30 per hour. Your Sarvam dashboard has exact billing.</div>
         <div id="version-line" class="footnote"></div>
+
+        <div id="social-row">
+          <div id="btn-follow" class="secondary-btn small" tabindex="0" title="Opens x.com/feat_ashish">
+            <svg width="12" height="12" viewBox="0 0 24 24">
+              <path d="M18.244 2.25 L21.552 2.25 L14.325 10.51 L22.827 21.75 L16.17 21.75 L10.956 14.933 L4.99 21.75 L1.68 21.75 L9.41 12.915 L1.254 2.25 L8.08 2.25 L12.793 8.481 Z M17.083 19.77 L18.916 19.77 L7.084 4.126 L5.117 4.126 Z" fill="#e4e4e4" />
+            </svg>
+            <span class="follow-label">Follow @feat_ashish</span>
+          </div>
+          <div id="btn-request" class="link-btn" tabindex="0" title="Opens x.com/feat_ashish">Request a feature</div>
+        </div>
       </div>
     </div>
   </div>
 
 </div>
 
-<script src="../srt.js?v=17"></script>
-<script src="../cues.js?v=17"></script>
-<script src="../sarvam.js?v=17"></script>
-<script src="../polish.js?v=17"></script>
-<script src="../settings.js?v=17"></script>
-<script src="adapter.js?v=17"></script>
-<script src="app.js?v=17"></script>
+<script src="../srt.js?v=18"></script>
+<script src="../cues.js?v=18"></script>
+<script src="../sarvam.js?v=18"></script>
+<script src="../langs.js?v=18"></script>
+<script src="../numbers.js?v=18"></script>
+<script src="../updates.js?v=18"></script>
+<script src="../polish.js?v=18"></script>
+<script src="../settings.js?v=18"></script>
+<script src="adapter.js?v=18"></script>
+<script src="app.js?v=18"></script>
 </body>
 </html>

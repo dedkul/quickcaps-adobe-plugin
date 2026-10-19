@@ -4,7 +4,7 @@ const assert = require("assert");
 global.window = global;
 // Run from the project root:  node tests/core.test.js
 const root = process.argv[2] || path.join(__dirname, "..");
-for (const f of ["srt.js", "cues.js", "sarvam.js", "polish.js", "settings.js"]) eval(fs.readFileSync(path.join(root, "core", f), "utf8"));
+for (const f of ["srt.js", "cues.js", "sarvam.js", "langs.js", "numbers.js", "updates.js", "polish.js", "settings.js"]) eval(fs.readFileSync(path.join(root, "core", f), "utf8"));
 
 // 70 s of 16 kHz mono 16-bit silence = what the bundled preset produces.
 function wav(seconds) {
@@ -105,6 +105,84 @@ console.log("ok  srt output starts:", JSON.stringify(srt.split("\n").slice(0, 3)
   assert.strictEqual(cues[0].text, "नमस्ते दोस्तों"); assert.strictEqual(cues[0].rom, "NAMASTE DOSTON"); assert.strictEqual(cues[1].text, "kya haal hai?");
   assert.strictEqual(QCPolish.transcript([{ text: "a.", start: 0, end: 1 }, { text: "b", start: 1.2, end: 2 }, { text: "c", start: 4, end: 5 }], "hi"), "a. b\n\nc\n");
   console.log("ok  polish: fillers, bleep (both ड़ encodings), reels, caps, transcript paragraphs");
+}
+
+// Languages: 23 on Saaras v4, the menu in index.html matches, script names per language.
+{
+  assert.strictEqual(QCLangs.LIST.length, 23, "22 Indian languages + English");
+  assert.strictEqual(QCLangs.LIST.filter((l) => l.top).length, 11, "10 most used + English first");
+  const html = fs.readFileSync(path.join(root, "core", "ui", "index.html"), "utf8");
+  const sel = html.slice(html.indexOf('<select id="inp-language">'), html.indexOf("</select>", html.indexOf('<select id="inp-language">')));
+  const values = [...sel.matchAll(/<option value="([^"]+)"/g)].map((m) => m[1]);
+  assert.deepStrictEqual(values, ["unknown"].concat(QCLangs.LIST.filter((l) => l.top).map((l) => l.code), QCLangs.LIST.filter((l) => !l.top).map((l) => l.code)), "menu lists every language once, top ones first");
+  assert(!/id="inp-language"/.test(html.slice(html.indexOf('id="screen-settings"'))), "language picker moved off Settings");
+  const titles = (code) => QCLangs.scriptOptions(code).map((o) => o.title);
+  assert.deepStrictEqual(titles("hi-IN"), ["हिंदी", "Hinglish", "Mixed", "English"]);
+  assert.deepStrictEqual(titles("ta-IN"), ["தமிழ்", "Tanglish", "Mixed", "English"]);
+  assert.deepStrictEqual(titles("mr-IN"), ["मराठी", "Roman", "Mixed", "English"]);
+  assert.deepStrictEqual(titles("en-IN"), ["English"], "English audio: English only");
+  assert.strictEqual(QCLangs.effectiveScript("en-IN", "rom"), "en");
+  assert.strictEqual(QCLangs.modeFor("en-IN", "en"), "transcribe", "English audio is transcribed, not translated");
+  assert.deepStrictEqual(["hi", "rom", "mix", "en"].map((s) => QCLangs.modeFor("ta-IN", s)), ["transcribe", "translit", "codemix", "translate"]);
+  assert.strictEqual(QCLangs.scriptName("ta-IN", "rom"), "Tanglish");
+  assert(QCLangs.LIST.every((l) => QCLangs.sample(l.code, "hi").length > 0), "every language has a preview line");
+  console.log("ok  23 languages, menu in sync with index.html, script buttons renamed per language");
+}
+
+// Numbers as digits: Hindi, Hinglish, English; Indian grouping; conservative.
+{
+  const d = QCNumbers.textToDigits;
+  assert.strictEqual(QCNumbers.groupIndian(150000), "1,50,000");
+  assert.strictEqual(QCNumbers.groupIndian(4500), "4,500");
+  assert.strictEqual(QCNumbers.groupIndian(25000000), "2,50,00,000");
+  assert.strictEqual(d("चार हज़ार पांच सौ में मिल गया", "hi-IN"), "4,500 में मिल गया");
+  assert.strictEqual(d("एक लाख पचास हज़ार रुपये", "hi-IN"), "1,50,000 रुपये");
+  assert.strictEqual(d("ढाई लाख, साढ़े चार हज़ार।", "hi-IN"), "2,50,000, 4,500।");
+  assert.strictEqual(d("डेढ़ सौ लोग", "hi-IN"), "150 लोग");
+  assert.strictEqual(d("do sau pachas rupaye", "hi-IN"), "250 rupaye");
+  assert.strictEqual(d("two hundred and five people, twenty-five thousand", "en-IN"), "205 people, 25,000");
+  assert.strictEqual(d("₹50 हज़ार", "hi-IN"), "₹50,000");
+  assert.strictEqual(d("पांच सौ करोड़ और ढाई करोड़", "hi-IN"), "500 करोड़ और 2.5 करोड़", "crore stays a word");
+  assert.strictEqual(d("उन्नीस सौ सैंतालीस में", "hi-IN"), "1947 में", "years have no comma");
+  assert.strictEqual(d("two thousand twenty five", "en-IN"), "2025");
+  // Left alone: small numbers, "give", half past four, scale words without a number, "with".
+  for (const s of ["दो लोग", "मुझे दो", "साढ़े चार बजे", "सौ बात की एक बात", "ke saath chalo", "one of them", "a thousand times", "दो तीन दिन", "I will do so"])
+    assert.strictEqual(d(s, "hi-IN"), s, s);
+  assert.strictEqual(d("चार हज़ार", "ta-IN"), "चार हज़ार", "Hindi words only read for Hindi or auto-detect");
+  // Merged words keep the phrase's timing and count as one word for captions.
+  const ws = "आज चार हज़ार पांच सौ रुपये".split(" ").map((t, i) => ({ text: t, start: i, end: i + 0.8 }));
+  const out = QCPolish.cleanWords(ws, { digits: true, lang: "hi-IN" });
+  assert.deepStrictEqual(out.map((w) => [w.text, w.start, w.end]), [["आज", 0, 0.8], ["4,500", 1, 4.8], ["रुपये", 5, 5.8]]);
+  assert.strictEqual(QCPolish.cleanWords(ws, { digits: false }).length, 6, "off by default: unchanged");
+  console.log("ok  numbers as digits: 4,500 · 1,50,000 · 2.5 करोड़ · 1947; small numbers and idioms left alone");
+}
+
+// Words per caption: hard limit, auto (0) unchanged.
+{
+  const ws = "one two three four five six seven eight nine ten".split(" ").map((t, i) => ({ text: t, start: i * 0.3, end: i * 0.3 + 0.25 }));
+  const base = { maxChars: 60, maxLines: 1, maxDur: 10, minDur: 0.2 };
+  assert.strictEqual(QCSrt.buildCues(ws, base).length, 1, "auto: one caption fits all");
+  assert.deepStrictEqual(QCSrt.buildCues(ws, Object.assign({ maxWords: 3 }, base)).map((c) => c.words.length), [3, 3, 3, 1]);
+  const s2 = ["aaj", "kaam", "khatam."].map((t, i) => ({ text: t, start: i * 0.3, end: i * 0.3 + 0.25 }));
+  assert.deepStrictEqual(QCSrt.buildCues(s2, Object.assign({ maxWords: 2 }, base)).map((c) => c.text), ["aaj kaam", "khatam."], "orphan fold respects the limit");
+  console.log("ok  words per caption: Auto keeps length-based breaks; 3 -> 3+3+3+1");
+}
+
+// Settings: new defaults, unknown language falls back to Hindi.
+{
+  const store = {};
+  global.localStorage = { getItem: (k) => store[k] || null, setItem: (k, v) => { store[k] = v; } };
+  store["quickcaps.settings"] = JSON.stringify({ language: "xx-IN", maxWords: 99, script: "rom" });
+  const s = QCSettings.load();
+  assert.strictEqual(s.language, "hi-IN");
+  assert.strictEqual(s.maxWords, 0);
+  assert.strictEqual(s.digits, false);
+  assert.deepStrictEqual(Object.keys(s.update).sort(), ["checkedAt", "dismissed", "dismissedAt", "latest", "url"]);
+  store["quickcaps.settings"] = JSON.stringify({ language: "ta-IN", maxWords: 2 });
+  assert.strictEqual(QCSettings.load().language, "ta-IN");
+  assert.strictEqual(QCSettings.load().maxWords, 2);
+  delete global.localStorage;
+  console.log("ok  settings: new defaults; unknown saved language falls back to Hindi");
 }
 
 // Upload format: capture what transcribe() would send to Sarvam.
@@ -219,4 +297,29 @@ console.log("ok  srt output starts:", JSON.stringify(srt.split("\n").slice(0, 3)
   assert(/Gemini/.test(QCSettings.wrongKeyMessage("AIza" + "a".repeat(35))));
   assert.strictEqual(QCSettings.wrongKeyMessage("sk_abcd1234_" + "a".repeat(24)), null, "Sarvam-style key passes");
   console.log("ok  pasted keys cleaned; OpenAI/Claude/Gemini keys flagged");
+
+  // Update check: once a day, newer-only, "Later" snoozes, failures are silent.
+  {
+    assert(QCUpdates.isNewer("0.10.0", "0.9.0"), "0.10 > 0.9");
+    assert(QCUpdates.isNewer("v1.0", "0.9.9"));
+    assert(!QCUpdates.isNewer("0.9.0", "v0.9.0"));
+    let calls = 0, lastInit = null;
+    const gh = async (url, init) => { calls++; lastInit = init; assert(/api\.github\.com\/repos\/dedkul\/quickcaps-adobe-plugin\/releases\/latest$/.test(url)); return { ok: true, json: async () => ({ tag_name: "v0.10.0", html_url: "https://github.com/x" }) }; };
+    const st = { checkedAt: 0, latest: "", url: "", dismissed: "", dismissedAt: 0 };
+    const day = 24 * 3600 * 1000, t0 = 1e12;
+    assert.deepStrictEqual(await QCUpdates.check("0.9.0", st, gh, t0), { version: "0.10.0", url: "https://github.com/x" });
+    assert.strictEqual(lastInit.headers["User-Agent"], "QuickCaps", "GitHub needs a User-Agent");
+    await QCUpdates.check("0.9.0", st, gh, t0 + day - 1);
+    assert.strictEqual(calls, 1, "no second request the same day");
+    await QCUpdates.check("0.9.0", st, gh, t0 + day);
+    assert.strictEqual(calls, 2, "asks again after a day");
+    assert.strictEqual(await QCUpdates.check("0.10.0", st, gh, t0 + day), null, "up to date: nothing shown");
+    QCUpdates.dismiss(st, t0 + day);
+    assert.strictEqual(QCUpdates.pending("0.9.0", st, t0 + 2 * day), null, "Later hides it");
+    assert(QCUpdates.pending("0.9.0", st, t0 + 9 * day), "back after a week");
+    const st2 = { checkedAt: 0, latest: "", url: "" };
+    assert.strictEqual(await QCUpdates.check("0.9.0", st2, async () => { throw new Error("offline"); }, t0), null, "offline is silent");
+    assert.strictEqual(st2.checkedAt, t0, "and waits a day before trying again");
+    console.log("ok  update check: daily, newer-only, Later snoozes a week, offline is silent");
+  }
 })().catch((e) => { console.error("FAIL", e); process.exit(1); });

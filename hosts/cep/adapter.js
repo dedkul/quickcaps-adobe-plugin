@@ -157,6 +157,15 @@
       return results;
     },
 
+    // CEP's own call opens the default browser (a plain link would open
+    // inside the panel).
+    async openUrl(url) {
+      if (!window.cep || !window.cep.util || !window.cep.util.openURLInDefaultBrowser) {
+        throw new Error("No browser opener in this Premiere version");
+      }
+      window.cep.util.openURLInDefaultBrowser(url);
+    },
+
     async saveSrt(srtText, suggestedName) {
       let target = null;
       try {

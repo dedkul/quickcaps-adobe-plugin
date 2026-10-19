@@ -35,13 +35,14 @@ window.QCSrt = (function () {
   /*
    * words: [{ text, start, end }] in seconds.
    * Greedy grouping into cues, breaking on: character budget, max duration,
-   * silence gaps, and always after sentence-ending punctuation (captions
-   * never straddle two sentences). A lone sentence-final word left over by
+   * silence gaps, an optional word limit (maxWords, 0 = no limit), and
+   * always after sentence-ending punctuation (captions never straddle two
+   * sentences). A lone sentence-final word left over by
    * the budget is folded back into the previous caption when it nearly fits.
    */
   function buildCues(words, opts) {
     const o = Object.assign(
-      { maxChars: 42, maxLines: 2, minDur: 1, maxDur: 6, maxGap: 0.8 },
+      { maxChars: 42, maxLines: 2, minDur: 1, maxDur: 6, maxGap: 0.8, maxWords: 0 },
       opts
     );
     const budget = o.maxChars * o.maxLines;
@@ -61,6 +62,7 @@ window.QCSrt = (function () {
         (wouldBe.length > budget ||
           dur > o.maxDur ||
           gap > o.maxGap ||
+          (o.maxWords > 0 && cur.words.length >= o.maxWords) ||
           SENTENCE_END.test(cur.text));
 
       if (!cur || mustBreak) {
@@ -85,7 +87,8 @@ window.QCSrt = (function () {
         !SENTENCE_END.test(prev.text) &&
         c.start - prev.end <= o.maxGap &&
         (prev.text + " " + c.text).length <= budget * 1.25 &&
-        c.end - prev.start <= o.maxDur * 1.25
+        c.end - prev.start <= o.maxDur * 1.25 &&
+        !(o.maxWords > 0 && prev.words.length >= o.maxWords)
       ) {
         prev.text += " " + c.text;
         prev.end = c.end;

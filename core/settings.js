@@ -21,14 +21,15 @@ window.QCSettings = (function () {
     apiKey: "",
     keyValid: null, // null = never checked, true/false after validation
     model: "saaras:v4",
-    language: "hi-IN",
-    script: "hi", // 'hi' Devanagari | 'rom' Hinglish roman | 'mix' Hindi + English words | 'en' English translation
+    language: "hi-IN", // a QCLangs code, or 'unknown' for auto-detect
+    script: "hi", // 'hi' the language's own script | 'rom' Roman (Hinglish…) | 'mix' + English words | 'en' English translation
     scope: "sequence", // 'sequence' | 'inout' | 'clips'
     pace: "balanced", // a PACES key, or 'custom'
     maxChars: 32,
     maxLines: 1,
     minDur: 1,
     maxDur: 4,
+    maxWords: 0, // words per caption: 0 = auto (fit by length), else 1-6
     keyterms: "", // custom words, raw text as typed (see parseKeyterms)
     // Extras (all off by default). Only `bilingual` costs Sarvam credits.
     reels: false, // no full stop at the end of captions
@@ -36,8 +37,12 @@ window.QCSettings = (function () {
     fillers: false, // drop umm/uh/hmm/अं
     bleep: false, // mask profanity
     bilingual: false, // also make an English track (2x Sarvam usage)
+    digits: false, // number words as digits, Indian grouping
     usage: { month: "", seconds: 0 },
+    update: { checkedAt: 0, latest: "", url: "", dismissed: "", dismissedAt: 0 }, // see updates.js
   };
+
+  const MAX_WORDS = 6;
 
   // Sarvam keyterm limits: up to 50 terms, 64 characters each.
   const MAX_KEYTERMS = 50;
@@ -76,6 +81,9 @@ window.QCSettings = (function () {
       if (s.usage.month !== month) s.usage = { month: month, seconds: 0 };
       // Sarvam retired the saarika models; move older saved settings forward.
       if (MODELS.indexOf(s.model) < 0) s.model = DEFAULTS.model;
+      if (window.QCLangs && !QCLangs.isKnown(s.language)) s.language = DEFAULTS.language;
+      if (!(s.maxWords >= 0 && s.maxWords <= MAX_WORDS)) s.maxWords = 0;
+      s.update = Object.assign({}, DEFAULTS.update, s.update);
       // Settings saved before pacing presets existed: infer from the numbers.
       if (!stored.pace && raw) s.pace = paceFor(s);
       return s;
@@ -160,6 +168,7 @@ window.QCSettings = (function () {
     applyPace: applyPace,
     parseKeyterms: parseKeyterms,
     MAX_KEYTERMS: MAX_KEYTERMS,
+    MAX_WORDS: MAX_WORDS,
     addUsage: addUsage,
     usageLabel: usageLabel,
     DEFAULTS: DEFAULTS,

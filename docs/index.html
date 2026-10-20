@@ -120,14 +120,14 @@
     <h2>Download QuickCaps</h2>
     <div class="downloads">
       <div class="dl">
-        <h3>Premiere Pro 2026</h3>
-        <p>Double-click the file and Creative Cloud installs it. Then open Window, UXP Plugins, QuickCaps.</p>
-        <a class="btn" href="https://github.com/dedkul/quickcaps-adobe-plugin/releases/latest/download/QuickCaps-Premiere-2026.ccx">Download for 2026</a>
+        <h3>Premiere Pro 2022 to 2026</h3>
+        <p>Recommended. Install it with the free <a href="https://aescripts.com/learn/zxp-installer/">ZXP Installer</a>, then open Window, Extensions, QuickCaps. Captions go straight onto your timeline.</p>
+        <a class="btn" href="https://github.com/dedkul/quickcaps-adobe-plugin/releases/latest/download/QuickCaps-Premiere-2022-2026.zxp">Download for 2022 to 2026</a>
       </div>
       <div class="dl">
-        <h3>Premiere Pro 2022 to 2025</h3>
-        <p>Install it with the free <a href="https://aescripts.com/learn/zxp-installer/">ZXP Installer</a>, then open Window, Extensions, QuickCaps. Captions go straight onto your timeline.</p>
-        <a class="btn" href="https://github.com/dedkul/quickcaps-adobe-plugin/releases/latest/download/QuickCaps-Premiere-2022-2025.zxp">Download for 2022 to 2025</a>
+        <h3>Premiere Pro 2026 only</h3>
+        <p>Optional: Adobe's newer plugin format. Double-click the file and Creative Cloud installs it, then open Window, UXP Plugins, QuickCaps. You drag the captions onto the timeline yourself.</p>
+        <a class="btn" href="https://github.com/dedkul/quickcaps-adobe-plugin/releases/latest/download/QuickCaps-Premiere-2026.ccx">Download the .ccx</a>
       </div>
     </div>
     <p class="fine">Works on Mac and Windows. <a href="https://github.com/dedkul/quickcaps-adobe-plugin/releases">All versions</a></p>
@@ -165,16 +165,16 @@
       <p>Yes. They're normal Premiere captions: select one and use Properties, then Track Style. Save a look once and reuse it on every video.</p>
     </details>
     <details>
-      <summary>Why do I drag the captions in on Premiere 2026?</summary>
-      <p>Premiere 2026's new plugin system can't create caption tracks yet. QuickCaps adds the captions to your Project panel, already timed, and you drag them to the start of the timeline. On 2022 to 2025 they're placed for you.</p>
+      <summary>Why do I drag the captions in with the .ccx?</summary>
+      <p>Adobe's newer plugin format can't create caption tracks yet. QuickCaps adds the captions to your Project panel, already timed, and you drag them to the start of the timeline. With the .zxp they're placed for you, on every version from 2022 to 2026.</p>
     </details>
     <details>
       <summary>Does it work on Windows?</summary>
       <p>Yes. The same downloads work on Mac and Windows.</p>
     </details>
     <details>
-      <summary>The panel is blank after installing on 2022 to 2025</summary>
-      <p>That's a known Adobe issue with some installers. On Mac, open Terminal and run <code>defaults write com.adobe.CSXS.11 PlayerDebugMode 1</code>. On Windows, open Command Prompt and run <code>reg add HKCU\Software\Adobe\CSXS.11 /v PlayerDebugMode /t REG_SZ /d 1 /f</code>. Use 12 instead of 11 for Premiere 2025, then restart Premiere.</p>
+      <summary>The panel is blank after installing the .zxp</summary>
+      <p>That's a known Adobe issue with some installers. On Mac, open Terminal and run <code>defaults write com.adobe.CSXS.11 PlayerDebugMode 1</code>. On Windows, open Command Prompt and run <code>reg add HKCU\Software\Adobe\CSXS.11 /v PlayerDebugMode /t REG_SZ /d 1 /f</code>. Use 12 instead of 11 for Premiere 2025 and later, then restart Premiere.</p>
     </details>
   </section>
 </main>

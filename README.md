@@ -41,14 +41,14 @@ for the way we actually mix them.
 
 ## Install
 
-Download the file for your Premiere version from the
+Download from the
 [latest release](https://github.com/dedkul/quickcaps-adobe-plugin/releases/latest).
-Both work on Mac and Windows.
+Both files work on Mac and Windows. Most people want the first one.
 
-| Premiere Pro | Download | How to install |
-| ------------ | -------- | -------------- |
-| 2026 | [QuickCaps-Premiere-2026.ccx](https://github.com/dedkul/quickcaps-adobe-plugin/releases/latest/download/QuickCaps-Premiere-2026.ccx) | Double-click it and Creative Cloud installs it. Open **Window → UXP Plugins → QuickCaps**. |
-| 2022 to 2025 | [QuickCaps-Premiere-2022-2025.zxp](https://github.com/dedkul/quickcaps-adobe-plugin/releases/latest/download/QuickCaps-Premiere-2022-2025.zxp) | Install it with the free [ZXP Installer](https://aescripts.com/learn/zxp-installer/). Open **Window → Extensions → QuickCaps**. |
+| File | Premiere Pro | How to install |
+| ---- | ------------ | -------------- |
+| [QuickCaps-Premiere-2022-2026.zxp](https://github.com/dedkul/quickcaps-adobe-plugin/releases/latest/download/QuickCaps-Premiere-2022-2026.zxp) **(recommended)** | 2022 to 2026 | Install it with the free [ZXP Installer](https://aescripts.com/learn/zxp-installer/). Open **Window → Extensions → QuickCaps**. Captions go straight onto your timeline. |
+| [QuickCaps-Premiere-2026.ccx](https://github.com/dedkul/quickcaps-adobe-plugin/releases/latest/download/QuickCaps-Premiere-2026.ccx) (optional) | 2026 only | Adobe's newer plugin format. Double-click it and Creative Cloud installs it. Open **Window → UXP Plugins → QuickCaps**. You drag the captions onto the timeline yourself. |
 
 When a new version comes out, QuickCaps shows a small note at the top of the
 panel with a download link.
@@ -84,9 +84,9 @@ QuickCaps never sees your money or your login.
    the **caption script**. The preview shows how your captions will break.
 3. Click **Generate captions** and wait a moment.
 4. Check the captions on the review screen and fix anything you like.
-5. Click **Add to timeline** (Premiere 2022 to 2025) or **Add to project**
-   (Premiere 2026). On 2026, drag the new caption item to the very start of
-   your timeline (00:00) and it lines up with the speech.
+5. Click **Add to timeline**. With the optional 2026 .ccx the button says
+   **Add to project**: drag the new caption item to the very start of your
+   timeline (00:00) and it lines up with the speech.
 6. To change the font, size, or colour, select a caption and use
    **Properties → Track Style**.
 
@@ -107,9 +107,9 @@ Sarvam. QuickCaps has no server and collects nothing.
 
 ## Troubleshooting
 
-**The panel is blank (Premiere 2022 to 2025).** A known Adobe issue with some
-installers. Run this, then restart Premiere (use `12` instead of `11` for
-Premiere 2025):
+**The panel is blank after installing the .zxp.** A known Adobe issue with
+some installers. Run this, then restart Premiere (use `12` instead of `11`
+for Premiere 2025 and later):
 
 - Mac, in Terminal: `defaults write com.adobe.CSXS.11 PlayerDebugMode 1`
 - Windows, in Command Prompt: `reg add HKCU\Software\Adobe\CSXS.11 /v PlayerDebugMode /t REG_SZ /d 1 /f`
@@ -121,9 +121,10 @@ Gemini, or other AI keys.
 **"Your Sarvam credit has run out."** Add credit in the Sarvam dashboard,
 then try again.
 
-**The captions aren't on my timeline (Premiere 2026).** Premiere 2026 doesn't
-let plugins create caption tracks yet. The captions are in your Project
-panel, already timed: drag them to the start (00:00) of the timeline.
+**The captions aren't on my timeline (2026 .ccx).** Adobe's newer plugin
+format can't create caption tracks yet. The captions are in your Project
+panel, already timed: drag them to the start (00:00) of the timeline. Or
+install the .zxp instead, which places them for you.
 
 Something else, or an idea for a feature? Message
 [@feat_ashish on X](https://x.com/feat_ashish) with a screenshot.
@@ -141,7 +142,7 @@ Something else, or an idea for a feature? Message
   the Sarvam client, languages, caption building, editing, clean-up, and the
   update check. Shared by both versions.
 - `hosts/uxp/`: Premiere Pro 2026 (25.6 and later), using Adobe's UXP API.
-- `hosts/cep/`: Premiere Pro 2022 to 2025 (CEP and ExtendScript).
+- `hosts/cep/`: the .zxp for Premiere Pro 2022 to 2026 (CEP and ExtendScript).
 - `presets/`: the audio export preset (WAV, mono, 16 kHz).
 - `scripts/`: build, local install, and packaging.
 - `docs/`: the website (GitHub Pages).
@@ -158,7 +159,7 @@ then **Unload** and **Load**.
 The plugin ID is `com.quickcaps.panel`. Don't change it, or installed copies
 won't update.
 
-### Build and load (Premiere 2022 to 2025)
+### Build and load (the .zxp, Premiere 2022 to 2026)
 
 `bash scripts/install-cep-dev.sh` links `dist/cep` into Adobe's extensions
 folder and turns on debug mode so Premiere loads the unsigned panel. Undo it
@@ -174,8 +175,8 @@ with `bash scripts/install-cep-dev.sh --remove`.
 - Sarvam times phrases, not words, so word timings inside a phrase are
   estimated from word length.
 - Captions are timed to the sequence, so the caption file always belongs at
-  00:00. On 2022 to 2025, ExtendScript's `createCaptionTrack` places it
-  automatically; on 2026 it's imported for the user to drag in.
+  00:00. In the .zxp, ExtendScript's `createCaptionTrack` places it
+  automatically; in the .ccx it's imported for the user to drag in.
 - The update check asks GitHub for the latest release at most once a day.
 - The browser preview: run `python3 -m http.server 8642` and open
   `http://localhost:8642/core/ui/index.html` (mock data). Add `?update=demo`
@@ -186,7 +187,7 @@ with `bash scripts/install-cep-dev.sh --remove`.
 1. Bump the version in `hosts/uxp/manifest.json` and
    `hosts/cep/CSXS/manifest.xml`.
 2. `bash scripts/package.sh` builds and signs
-   `release/QuickCaps-Premiere-2022-2025.zxp`. It needs Adobe's
+   `release/QuickCaps-Premiere-2022-2026.zxp`. It needs Adobe's
    `ZXPSignCmd` in `tools/` and the certificate in `signing/`, both kept out
    of git. **Always sign with the same certificate.**
 3. `node scripts/build.js uxp`, then in the UXP Developer Tool: ••• on

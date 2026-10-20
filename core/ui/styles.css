@@ -70,7 +70,7 @@ body {
 #topbar {
   display: flex;
   flex-direction: column;
-  padding: 10px 12px;
+  padding: 10px 16px;
   border-bottom: 1px solid var(--line);
 }
 #brand { display: flex; flex-direction: row; align-items: center; flex-grow: 1; }
@@ -108,18 +108,22 @@ body {
   flex-direction: row;
   align-items: flex-start;
   align-self: center;
-  width: calc(100% - 24px);
+  width: calc(100% - 32px);
   max-width: 440px;
   margin-top: 10px;
-  padding: 9px 8px 9px 11px;
-  border-radius: 6px;
-  border-left: 3px solid var(--accent);
+  padding: 9px 8px 9px 10px;
+  border-radius: 7px;
   background-color: var(--accent-tint);
 }
+/* A coloured dot says what kind of message it is (no side stripe). */
+.notice-dot { width: 8px; height: 8px; border-radius: 4px; margin: 4px 9px 0 0; flex-shrink: 0; background-color: var(--accent); }
 #notice.hidden { display: none; }
-#notice.error { border-left-color: var(--danger); background-color: var(--danger-tint); }
-#notice.warn { border-left-color: var(--warning); background-color: var(--warning-tint); }
-#notice.success { border-left-color: var(--success); background-color: var(--success-tint); }
+#notice.error { background-color: var(--danger-tint); }
+#notice.warn { background-color: var(--warning-tint); }
+#notice.success { background-color: var(--success-tint); }
+#notice.error .notice-dot { background-color: var(--danger); }
+#notice.warn .notice-dot { background-color: var(--warning); }
+#notice.success .notice-dot { background-color: var(--success); }
 #notice-body { flex-grow: 1; flex-shrink: 1; }
 #notice-text { font-size: 12px; color: var(--text); }
 #notice-detail { font-size: 10px; color: var(--text-3); margin-top: 4px; }
@@ -146,17 +150,16 @@ body {
   flex-basis: 0px;
   min-height: 0px;
   overflow-y: auto;
-  /* Reserve scrollbar room on both sides so the centered column lines up
-     with the header. Browsers only; UXP ignores it (overlay scrollbars). */
-  scrollbar-gutter: stable both-edges;
-  padding: 12px 12px 16px 12px;
+  /* Side padding matches the header and footer; app.js (fitGutters)
+     tucks the scrollbar into the right side so the columns line up. */
+  padding: 12px 16px 18px 16px;
 }
 /* Keep content at natural height and scroll, rather than squashing it. */
 .screen-scroll > div,
 .screen-scroll > .col > div { flex-shrink: 0; }
 .screen-footer {
   flex-shrink: 0;
-  padding: 10px 12px 12px 12px;
+  padding: 10px 16px 12px 16px;
   border-top: 1px solid var(--line);
   background-color: var(--bg);
 }
@@ -171,48 +174,9 @@ body {
 
 .footnote { font-size: 11px; color: var(--text-3); margin-top: 8px; }
 .footnote.tight { margin-top: 5px; }
+#script-hint { margin-top: 6px; }
 
-/* ---------- Choice list (radio cards) ---------- */
-.choice-list {
-  display: flex;
-  flex-direction: column;
-  border: 1px solid var(--line);
-  border-radius: 8px;
-  background-color: var(--surface);
-  overflow: hidden;
-}
-.choice {
-  display: flex;
-  flex-direction: row;
-  align-items: center;
-  padding: 9px 11px;
-  border-bottom: 1px solid var(--line);
-}
-.choice:last-child { border-bottom: 0px solid var(--line); }
-.choice:hover { background-color: var(--surface-hover); }
-.choice.active { background-color: var(--accent-tint); }
-.choice.unavailable { opacity: 0.5; }
-
-.radio {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 16px;
-  height: 16px;
-  border-radius: 8px;
-  border: 1.5px solid var(--line-strong);
-  margin-right: 10px;
-  flex-shrink: 0;
-}
-.radio-dot { width: 8px; height: 8px; border-radius: 4px; background-color: var(--accent); opacity: 0; }
-.choice.active .radio { border-color: var(--accent); }
-.choice.active .radio-dot { opacity: 1; }
-
-.choice-text { display: flex; flex-direction: column; flex-grow: 1; }
-.choice-title { font-size: 12px; color: var(--text); }
 .choice-sub { font-size: 11px; color: var(--text-3); margin-top: 2px; }
-.choice.active .choice-title { color: #ffffff; }
-.choice.active .choice-sub { color: var(--accent-text); }
 
 /* ---------- Segmented control ---------- */
 .seg {
@@ -244,8 +208,10 @@ body {
 .seg-sm .seg-title { font-size: 11px; }
 
 /* ---------- Pacing: custom rules + preview ---------- */
+#seg-scope .seg-title,
 #seg-pace .seg-title,
 #seg-script .seg-title { font-size: 12px; }
+.seg-item.unavailable { opacity: 0.45; }
 
 #custom-panel {
   display: flex;
@@ -418,20 +384,36 @@ input:focus, select:focus, textarea:focus { border-color: var(--accent); }
   padding: 9px 11px;
   margin-bottom: 4px;
   border-radius: 8px;
-  border-left: 3px solid var(--accent);
   background-color: var(--accent-tint);
 }
 .resume-text { flex-grow: 1; }
 .resume-title { font-size: 12px; color: var(--text); }
 #btn-resume { margin-left: 10px; }
 #btn-discard { margin-left: 12px; }
-#update-card { border-left-color: var(--success); background-color: var(--success-tint); }
+#update-card { background-color: var(--success-tint); }
 #btn-update { margin-left: 10px; }
 #btn-update-later { margin-left: 12px; }
 .link-btn.muted { color: var(--text-3); font-weight: 400; }
 .link-btn.muted:hover { color: var(--text); }
 
 /* ---------- Extras ---------- */
+#extras-box {
+  display: flex;
+  flex-direction: column;
+  margin-top: 16px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background-color: var(--surface);
+  overflow: hidden;
+}
+#extras-head { display: flex; flex-direction: row; align-items: center; padding: 10px 11px; }
+#extras-head:hover { background-color: var(--surface-hover); }
+.extras-text { display: flex; flex-direction: column; flex-grow: 1; flex-shrink: 1; min-width: 0px; }
+.extras-title-row { display: flex; flex-direction: row; align-items: center; }
+.extras-title { font-size: 12px; font-weight: 600; color: var(--text); }
+.count { font-size: 10px; font-weight: 600; padding: 1px 6px; margin-left: 6px; border-radius: 8px; background-color: var(--accent-tint); color: var(--accent-text); }
+#extras-chev { flex-shrink: 0; margin-left: 10px; }
+#extras { display: flex; flex-direction: column; border-top: 1px solid var(--line); }
 .extra {
   display: flex;
   flex-direction: row;
@@ -557,7 +539,7 @@ input:focus, select:focus, textarea:focus { border-color: var(--accent); }
 .check.active .check-tick { opacity: 1; }
 .check-label { font-size: 11px; color: var(--text-2); }
 
-.cue-row.match { background-color: var(--accent-tint); border-left: 3px solid var(--accent); padding-left: 7px; }
+.cue-row.match { background-color: var(--accent-tint); }
 .cue-row.match .cue-text { background-color: var(--accent-tint); border-color: var(--accent-tint); }
 
 #cue-list {
@@ -608,13 +590,15 @@ input:focus, select:focus, textarea:focus { border-color: var(--accent); }
 #btn-place { flex-grow: 1; margin-top: 0; margin-right: 8px; }
 
 /* ---------- Settings ---------- */
-#key-row { display: flex; flex-direction: row; align-items: center; }
-#inp-key { flex-grow: 1; font-size: 11px; margin-right: 10px; }
-#key-status-row { display: flex; flex-direction: row; align-items: center; margin-top: 8px; }
-#key-status { flex-grow: 1; margin-top: 0; }
-#key-status.ok { color: var(--success); }
-#key-status.bad { color: var(--danger); }
-
+/* Groups divided by hairlines: Sarvam account, Transcription, about. */
+.group { display: flex; flex-direction: column; padding: 14px 0 16px 0; border-bottom: 1px solid var(--line); }
+.group:first-child { padding-top: 2px; }
+/* Natural height inside a group, like the column itself (see above). */
+.group > div, .group > select, .group > textarea { flex-shrink: 0; }
+.group.last { border-bottom: 0px solid var(--line); padding-bottom: 4px; }
+.group-title { font-size: 12px; font-weight: 600; color: var(--text); margin-bottom: 4px; }
+.group-sub { font-size: 11px; color: var(--text-3); margin-bottom: 10px; }
+.group-sub.tight { margin-bottom: 0; }
 .section-label-row { display: flex; flex-direction: row; align-items: center; }
 /* Explicit margins: the label is a :first-child here, which would
    otherwise get the tight top margin meant for a screen's first label. */
@@ -622,19 +606,41 @@ input:focus, select:focus, textarea:focus { border-color: var(--accent); }
 .section-label-row .footnote { margin-top: 14px; margin-bottom: 7px; }
 #inp-keyterms { height: 74px; resize: none; }
 #keyterms-note { margin-top: 5px; }
+.section-label.first { margin-top: 8px; }
+.link-btn.inline { font-size: 11px; padding: 0; }
 
-#usage-card {
+#key-row { display: flex; flex-direction: row; align-items: center; }
+#inp-key { flex-grow: 1; flex-shrink: 1; min-width: 0px; font-size: 11px; margin-right: 8px; }
+#inp-key.bad { border-color: var(--danger); }
+.primary-btn.small { height: 30px; padding: 0 12px; font-size: 12px; flex-shrink: 0; border-radius: 6px; }
+#key-msg { margin-top: 7px; }
+#key-msg.bad { color: var(--danger); }
+#btn-key-cancel { margin-top: 8px; font-size: 11px; }
+
+#key-card {
   display: flex;
   flex-direction: row;
   align-items: center;
-  margin-top: 18px;
-  padding: 10px 12px;
+  padding: 10px 11px;
   border-radius: 8px;
-  border: 1px solid var(--line);
-  background-color: var(--surface);
+  background-color: var(--success-tint);
 }
-.usage-label { font-size: 12px; color: var(--text-2); flex-grow: 1; }
-#usage-val { font-size: 12px; font-weight: 600; }
+.key-icon { flex-shrink: 0; margin-right: 9px; }
+.key-text { display: flex; flex-direction: column; flex-grow: 1; flex-shrink: 1; min-width: 0px; }
+.key-title { font-size: 12px; font-weight: 600; color: var(--text); }
+.key-sub { font-size: 11px; color: #8fc9ad; margin-top: 2px; }
+#btn-key-change { margin-left: 10px; font-size: 11px; }
+#btn-key-remove { margin-left: 12px; font-size: 11px; color: #8fc9ad; }
+
+#usage-row { display: flex; flex-direction: row; align-items: center; margin-top: 12px; }
+.usage-label { font-size: 11px; color: var(--text-2); margin-right: 6px; }
+#usage-val { font-size: 11px; font-weight: 600; flex-grow: 1; }
+#link-billing { font-size: 11px; }
+
+#about-row { display: flex; flex-direction: row; align-items: center; }
+.about-text { display: flex; flex-direction: column; flex-grow: 1; flex-shrink: 1; min-width: 0px; margin-right: 10px; }
+#btn-x { flex-shrink: 0; height: 30px; }
+.x-label { margin-left: 7px; font-size: 12px; }
 
 /* Last, and specific enough to beat every display rule above
    (no !important — UXP support for it isn't documented). */
@@ -647,6 +653,10 @@ input:focus, select:focus, textarea:focus { border-color: var(--accent); }
 #notice-detail.hidden,
 #resume-card.hidden,
 #update-card.hidden,
+#extras.hidden,
+#key-entry.hidden,
+#key-ok.hidden,
+.count.hidden,
 #save-menu.hidden,
 #cost-x2.hidden,
 .menu-item.hidden,
@@ -654,13 +664,8 @@ input:focus, select:focus, textarea:focus { border-color: var(--accent); }
 .seg.hidden,
 #custom-panel.hidden { display: none; }
 
-#version-line { margin-top: 18px; }
+#version-line { margin-top: 12px; }
 
-/* ---------- Settings footer: follow + feature requests ---------- */
-#social-row { display: flex; flex-direction: row; align-items: center; margin-top: 12px; margin-bottom: 4px; }
-#btn-follow { flex-shrink: 0; }
-.follow-label { margin-left: 7px; }
-#btn-request { margin-left: 14px; font-size: 11px; }
 
 /* ---------- Narrow panels ---------- */
 /* Below ~340px the 4-up pacing control and the script toggle run out of
@@ -672,7 +677,7 @@ input:focus, select:focus, textarea:focus { border-color: var(--accent); }
   .ghost-label { display: none; }
   .ghost-btn { padding: 6px 7px; }
   #preview-frame { height: 96px; }
-  .screen-scroll { padding: 10px 10px 14px 10px; }
-  #topbar, .screen-footer { padding-left: 10px; padding-right: 10px; }
-  #notice { width: calc(100% - 20px); }
+  .screen-scroll { padding: 10px 12px 14px 12px; }
+  #topbar, .screen-footer { padding-left: 12px; padding-right: 12px; }
+  #notice { width: calc(100% - 24px); }
 }

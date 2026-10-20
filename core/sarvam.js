@@ -365,7 +365,7 @@ window.QCSarvam = (function () {
       await transliterateOne("नमस्ते", apiKey);
       return { ok: true };
     } catch (e) {
-      return { ok: false, message: e.message };
+      return { ok: false, message: e.message, status: e.status || 0 };
     }
   }
 

@@ -16,7 +16,7 @@ for the way we actually mix them.
   &nbsp;
   <img src="docs/img/panel-review.png" width="260" alt="Review screen: timed captions you can edit, split, merge, and search" />
   &nbsp;
-  <img src="docs/img/panel-settings.png" width="260" alt="Settings: where you paste your Sarvam API key" />
+  <img src="docs/img/panel-settings.png" width="260" alt="Settings: paste your Sarvam API key and QuickCaps checks it" />
 </p>
 
 ## What it does
@@ -65,15 +65,17 @@ QuickCaps never sees your money or your login.
    accounts get ₹100 of free credit, about three hours of captions.
 2. In the dashboard, find the **API keys** section and create a key.
 3. Copy the key. It's a long line of letters and numbers.
-4. In QuickCaps, click **Settings**, paste the key, and click **Check key**.
-   "Key works" means you're set.
+4. In QuickCaps, click **Settings** and paste the key. QuickCaps checks it
+   with Sarvam and saves it straight away; **Connected** means you're set.
 
 **Keep your key private.**
 
 - Don't share it, and don't post it in a screenshot, video, or tutorial.
   Anyone with your key can use your Sarvam credit.
 - If it ever gets out, delete it in the Sarvam dashboard and create a new one.
-- QuickCaps keeps the key on your computer and sends it only to Sarvam.
+- QuickCaps keeps the key on your computer, shows only its last four
+  characters, and sends it only to Sarvam. **Remove** in Settings deletes it
+  from your computer.
 
 ## Make captions
 

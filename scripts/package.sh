@@ -1,14 +1,17 @@
 #!/bin/bash
-# Builds the downloadable package for Premiere Pro 2022-2025 (Mac and Windows):
+# Builds the downloadable .zxp for Premiere Pro 2022-2026 (Mac and Windows):
 #
 #   bash scripts/package.sh
 #
-# Output: release/QuickCaps-Premiere-2022-2025.zxp
+# Output: release/QuickCaps-Premiere-2022-2026.zxp
+# (Attach a copy named QuickCaps-Premiere-2022-2025.zxp too, so links to
+# the old name keep working.)
 #
 # File names carry no version number, so the website's "latest release"
 # download links keep working. The version lives in the GitHub release tag.
 #
-# The 2026 version (.ccx) is made in the UXP Developer Tool: ••• → Package.
+# The optional 2026-only version (.ccx) is made in the UXP Developer Tool:
+# ••• → Package.
 #
 # Signing uses a self-signed certificate kept in signing/. Keep that folder
 # private and keep using the same certificate for updates.
@@ -26,7 +29,7 @@ PASS_FILE="$CERT_DIR/password.txt"
 [ -x "$SIGN" ] || { echo "Missing tools/ZXPSignCmd (Adobe's signing tool)."; exit 1; }
 
 VERSION=$(sed -n 's/.*ExtensionBundleVersion="\([^"]*\)".*/\1/p' "$ROOT/hosts/cep/CSXS/manifest.xml")
-OUT="$ROOT/release/QuickCaps-Premiere-2022-2025.zxp"
+OUT="$ROOT/release/QuickCaps-Premiere-2022-2026.zxp"
 
 # One certificate for the life of the plugin (10 years).
 if [ ! -f "$CERT" ]; then

@@ -1,5 +1,5 @@
 /*
- * CEP host adapter for Premiere Pro 2022–2025 (and 2026 while it still
+ * CEP host adapter for Premiere Pro 2022–2026 (and later while it still
  * loads CEP panels). Implements the QCHost interface used by core/ui/app.js;
  * see core/ui/adapter.js for the reference mock.
  *

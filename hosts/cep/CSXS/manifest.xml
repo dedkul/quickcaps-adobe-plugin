@@ -4,10 +4,10 @@
   load this too while it still supports CEP; the UXP build is the long-term
   one there.
 -->
-<ExtensionManifest Version="11.0" ExtensionBundleId="com.quickcaps.cep" ExtensionBundleVersion="0.9.0" ExtensionBundleName="QuickCaps"
+<ExtensionManifest Version="11.0" ExtensionBundleId="com.quickcaps.cep" ExtensionBundleVersion="0.10.0" ExtensionBundleName="QuickCaps"
   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
   <ExtensionList>
-    <Extension Id="com.quickcaps.cep.panel" Version="0.9.0" />
+    <Extension Id="com.quickcaps.cep.panel" Version="0.10.0" />
   </ExtensionList>
   <ExecutionEnvironment>
     <HostList>

@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8" />
 <title>QuickCaps</title>
-<link rel="stylesheet" href="styles.css?v=18" />
+<link rel="stylesheet" href="styles.css?v=20" />
 </head>
 <!--
   Built for Premiere's UXP renderer, which is not a full browser: no
@@ -51,6 +51,7 @@
 
   <!-- In-flow notices replace toasts (UXP has no positioned overlays). -->
   <div id="notice" class="hidden">
+    <div class="notice-dot"></div>
     <div id="notice-body">
       <div id="notice-text"></div>
       <div id="notice-detail" class="hidden"></div>
@@ -88,37 +89,25 @@
         </div>
 
         <div class="section-label">Caption source</div>
-        <div id="scope-list" class="choice-list">
-          <div class="choice" data-scope="sequence" tabindex="0">
-            <div class="radio"><div class="radio-dot"></div></div>
-            <div class="choice-text">
-              <div class="choice-title">Entire sequence</div>
-              <div class="choice-sub">All audio, start to end</div>
-            </div>
+        <div class="seg" id="seg-scope">
+          <div class="seg-item" data-val="sequence" tabindex="0">
+            <div class="seg-title">Sequence</div>
+            <div class="seg-sub">Start to end</div>
           </div>
-          <div class="choice" data-scope="inout" tabindex="0">
-            <div class="radio"><div class="radio-dot"></div></div>
-            <div class="choice-text">
-              <div class="choice-title">In to Out range</div>
-              <div class="choice-sub">Between your In and Out marks</div>
-            </div>
+          <div class="seg-item" data-val="inout" tabindex="0">
+            <div class="seg-title">In to Out</div>
+            <div class="seg-sub" id="inout-note">Your marks</div>
           </div>
-          <div class="choice" data-scope="clips" tabindex="0">
-            <div class="radio"><div class="radio-dot"></div></div>
-            <div class="choice-text">
-              <div class="choice-title">Selected clips</div>
-              <div class="choice-sub" id="clips-note">Select clips on the timeline</div>
-            </div>
+          <div class="seg-item" data-val="clips" tabindex="0">
+            <div class="seg-title">Clips</div>
+            <div class="seg-sub" id="clips-note">Select first</div>
           </div>
         </div>
 
         <!-- Options are listed here (not built in JS) because UXP's select
              is unreliable with options added later. Keep in step with
              core/langs.js; tests/core.test.js checks they match. -->
-        <div class="section-label-row">
-          <div class="section-label">Spoken language</div>
-          <div id="lang-native" class="footnote"></div>
-        </div>
+        <div class="section-label">Spoken language</div>
         <select id="inp-language">
           <option value="unknown">Detect automatically</option>
           <option value="" disabled="disabled">──────────</option>
@@ -147,7 +136,6 @@
           <option value="mai-IN">Maithili · मैथिली</option>
           <option value="doi-IN">Dogri · डोगरी</option>
         </select>
-        <div class="footnote tight">The language people speak in this video.</div>
 
         <div class="section-label">Caption script</div>
         <!-- Titles and subtitles are filled in per language by app.js. -->
@@ -238,48 +226,56 @@
         </div>
         <div class="footnote">Font, size, and colors come from Premiere's caption style. Change them in Properties → Track Style once the captions are on your timeline.</div>
 
-        <div class="section-label-row">
-          <div class="section-label">Extras</div>
-          <div class="footnote">optional</div>
-        </div>
-        <div id="extras" class="choice-list">
-          <div class="extra" data-k="reels" tabindex="0">
-            <div class="switch"><div class="knob"></div></div>
-            <div class="extra-text">
-              <div class="extra-head"><div class="extra-name">Reels style</div><div class="badge free">No extra cost</div></div>
-              <div class="extra-sub">No full stops at the end of captions</div>
-              <div id="opt-caps" class="check subopt" tabindex="0">
-                <div class="check-box"><div class="check-tick"></div></div>
-                <div class="check-label">ALL CAPS (Roman and English text)</div>
+        <!-- Extras fold into one row that says what's on; opens in place. -->
+        <div id="extras-box">
+          <div id="extras-head" tabindex="0">
+            <div class="extras-text">
+              <div class="extras-title-row"><div class="extras-title">Extras</div><div id="extras-count" class="count hidden"></div></div>
+              <div id="extras-summary" class="extra-sub"></div>
+            </div>
+            <svg id="extras-chev" width="10" height="10" viewBox="0 0 10 10">
+              <path id="extras-chev-path" d="M2 3.5 L5 6.5 L8 3.5" stroke="#a3a3a3" stroke-width="1.5" fill="none" />
+            </svg>
+          </div>
+          <div id="extras" class="hidden">
+            <div class="extra" data-k="reels" tabindex="0">
+              <div class="switch"><div class="knob"></div></div>
+              <div class="extra-text">
+                <div class="extra-head"><div class="extra-name">Reels style</div><div class="badge free">Free</div></div>
+                <div class="extra-sub">No full stops at the end of captions</div>
+                <div id="opt-caps" class="check subopt" tabindex="0">
+                  <div class="check-box"><div class="check-tick"></div></div>
+                  <div class="check-label">ALL CAPS (Roman and English text)</div>
+                </div>
               </div>
             </div>
-          </div>
-          <div class="extra" data-k="fillers" tabindex="0">
-            <div class="switch"><div class="knob"></div></div>
-            <div class="extra-text">
-              <div class="extra-head"><div class="extra-name">Clean up fillers</div><div class="badge free">No extra cost</div></div>
-              <div class="extra-sub">Removes umm, uh, hmm, अं</div>
+            <div class="extra" data-k="fillers" tabindex="0">
+              <div class="switch"><div class="knob"></div></div>
+              <div class="extra-text">
+                <div class="extra-head"><div class="extra-name">Clean up fillers</div><div class="badge free">Free</div></div>
+                <div class="extra-sub">Removes umm, uh, hmm, अं</div>
+              </div>
             </div>
-          </div>
-          <div class="extra" data-k="digits" tabindex="0">
-            <div class="switch"><div class="knob"></div></div>
-            <div class="extra-text">
-              <div class="extra-head"><div class="extra-name">Numbers as digits</div><div class="badge free">No extra cost</div></div>
-              <div id="digits-sub" class="extra-sub"></div>
+            <div class="extra" data-k="digits" tabindex="0">
+              <div class="switch"><div class="knob"></div></div>
+              <div class="extra-text">
+                <div class="extra-head"><div class="extra-name">Numbers as digits</div><div class="badge free">Free</div></div>
+                <div id="digits-sub" class="extra-sub"></div>
+              </div>
             </div>
-          </div>
-          <div class="extra" data-k="bleep" tabindex="0">
-            <div class="switch"><div class="knob"></div></div>
-            <div class="extra-text">
-              <div class="extra-head"><div class="extra-name">Bleep bad words</div><div class="badge free">No extra cost</div></div>
-              <div class="extra-sub">Shows them as ****</div>
+            <div class="extra" data-k="bleep" tabindex="0">
+              <div class="switch"><div class="knob"></div></div>
+              <div class="extra-text">
+                <div class="extra-head"><div class="extra-name">Bleep bad words</div><div class="badge free">Free</div></div>
+                <div class="extra-sub">Shows them as ****</div>
+              </div>
             </div>
-          </div>
-          <div class="extra" data-k="bilingual" tabindex="0">
-            <div class="switch"><div class="knob"></div></div>
-            <div class="extra-text">
-              <div class="extra-head"><div class="extra-name">Add English track</div><div class="badge double">2× Sarvam usage</div></div>
-              <div class="extra-sub">A second caption track with English subtitles</div>
+            <div class="extra" data-k="bilingual" tabindex="0">
+              <div class="switch"><div class="knob"></div></div>
+              <div class="extra-text">
+                <div class="extra-head"><div class="extra-name">Add English track</div><div class="badge double">2× cost</div></div>
+                <div class="extra-sub">A second caption track with English subtitles</div>
+              </div>
             </div>
           </div>
         </div>
@@ -383,44 +379,72 @@
   <div id="screen-settings" class="screen hidden">
     <div class="screen-scroll">
       <div class="col">
-        <div class="section-label">Sarvam API key</div>
-        <div id="key-row">
-          <input type="password" id="inp-key" placeholder="Paste your key from dashboard.sarvam.ai" />
-          <div id="btn-key-eye" class="link-btn" tabindex="0">Show</div>
-        </div>
-        <div id="key-status-row">
-          <div id="key-status" class="footnote"></div>
-          <div id="btn-key-check" class="secondary-btn small" tabindex="0">Check key</div>
-        </div>
+        <div class="group">
+          <div class="group-title">Sarvam account</div>
 
-        <div class="section-label">Model</div>
-        <select id="inp-model">
-          <option value="saaras:v4">Saaras v4 · latest, recommended</option>
-          <option value="saaras:v3">Saaras v3</option>
-        </select>
-
-        <div class="section-label-row">
-          <div class="section-label">Names and words</div>
-          <div id="keyterms-count" class="footnote"></div>
-        </div>
-        <textarea id="inp-keyterms" placeholder="One per line, e.g.&#10;QuickCaps&#10;Ashish&#10;Bengaluru"></textarea>
-        <div id="keyterms-note" class="footnote"></div>
-
-        <div id="usage-card">
-          <div class="usage-label">Usage this month</div>
-          <div id="usage-val">0 min · ~₹0</div>
-        </div>
-        <div class="footnote">Estimated from audio length at ₹30 per hour. Your Sarvam dashboard has exact billing.</div>
-        <div id="version-line" class="footnote"></div>
-
-        <div id="social-row">
-          <div id="btn-follow" class="secondary-btn small" tabindex="0" title="Opens x.com/feat_ashish">
-            <svg width="12" height="12" viewBox="0 0 24 24">
-              <path d="M18.244 2.25 L21.552 2.25 L14.325 10.51 L22.827 21.75 L16.17 21.75 L10.956 14.933 L4.99 21.75 L1.68 21.75 L9.41 12.915 L1.254 2.25 L8.08 2.25 L12.793 8.481 Z M17.083 19.77 L18.916 19.77 L7.084 4.126 L5.117 4.126 Z" fill="#e4e4e4" />
-            </svg>
-            <span class="follow-label">Follow @feat_ashish</span>
+          <!-- No key yet, or replacing it: paste (or Enter, or Save) checks and saves. -->
+          <div id="key-entry">
+            <div class="group-sub">QuickCaps turns speech into text with your own Sarvam account. Get a key at <span id="link-dashboard" class="link-btn inline" tabindex="0">dashboard.sarvam.ai</span>; new accounts get ₹100 free.</div>
+            <div id="key-row">
+              <input type="text" id="inp-key" placeholder="Paste your API key" autocomplete="off" spellcheck="false" />
+              <div id="btn-key-save" class="primary-btn small" tabindex="0">Save key</div>
+            </div>
+            <div id="key-msg" class="footnote">Paste it and QuickCaps checks and saves it straight away.</div>
+            <div id="btn-key-cancel" class="link-btn muted hidden" tabindex="0">Keep the saved key</div>
           </div>
-          <div id="btn-request" class="link-btn" tabindex="0" title="Opens x.com/feat_ashish">Request a feature</div>
+
+          <!-- Saved key: never shown again, only its last four characters. -->
+          <div id="key-ok" class="hidden">
+            <div id="key-card">
+              <svg class="key-icon" width="16" height="16" viewBox="0 0 16 16">
+                <rect x="0" y="0" width="16" height="16" rx="8" fill="#46b886" />
+                <path d="M4.3 8.4 L5.5 7.2 L7 8.7 L10.5 5.2 L11.7 6.4 L7 11.1 Z" fill="#ffffff" />
+              </svg>
+              <div class="key-text">
+                <div id="key-title" class="key-title">Connected</div>
+                <div id="key-tail" class="key-sub"></div>
+              </div>
+              <div id="btn-key-change" class="link-btn" tabindex="0">Change</div>
+              <div id="btn-key-remove" class="link-btn muted" tabindex="0">Remove</div>
+            </div>
+            <div id="usage-row">
+              <div class="usage-label">This month</div>
+              <div id="usage-val">0 min · ~₹0</div>
+              <div id="link-billing" class="link-btn" tabindex="0" title="Exact billing is in your Sarvam dashboard">Billing</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="group">
+          <div class="group-title">Transcription</div>
+          <div class="section-label first">Model</div>
+          <select id="inp-model">
+            <option value="saaras:v4">Saaras v4 · latest, recommended</option>
+            <option value="saaras:v3">Saaras v3</option>
+          </select>
+
+          <div class="section-label-row">
+            <div class="section-label">Names and words</div>
+            <div id="keyterms-count" class="footnote"></div>
+          </div>
+          <textarea id="inp-keyterms" placeholder="One per line, e.g.&#10;QuickCaps&#10;Ashish&#10;Bengaluru"></textarea>
+          <div id="keyterms-note" class="footnote"></div>
+        </div>
+
+        <div class="group last">
+          <div id="about-row">
+            <div class="about-text">
+              <div class="group-title">Made by Ashish</div>
+              <div class="group-sub tight">Found a bug, or want a feature? Tell me on X.</div>
+            </div>
+            <div id="btn-x" class="secondary-btn small" tabindex="0" title="Opens x.com/feat_ashish">
+              <svg width="12" height="12" viewBox="0 0 24 24">
+                <path d="M18.244 2.25 L21.552 2.25 L14.325 10.51 L22.827 21.75 L16.17 21.75 L10.956 14.933 L4.99 21.75 L1.68 21.75 L9.41 12.915 L1.254 2.25 L8.08 2.25 L12.793 8.481 Z M17.083 19.77 L18.916 19.77 L7.084 4.126 L5.117 4.126 Z" fill="#e4e4e4" />
+              </svg>
+              <span class="x-label">@feat_ashish</span>
+            </div>
+          </div>
+          <div id="version-line" class="footnote"></div>
         </div>
       </div>
     </div>
@@ -428,15 +452,16 @@
 
 </div>
 
-<script src="../srt.js?v=18"></script>
-<script src="../cues.js?v=18"></script>
-<script src="../sarvam.js?v=18"></script>
-<script src="../langs.js?v=18"></script>
-<script src="../numbers.js?v=18"></script>
-<script src="../updates.js?v=18"></script>
-<script src="../polish.js?v=18"></script>
-<script src="../settings.js?v=18"></script>
-<script src="adapter.js?v=18"></script>
-<script src="app.js?v=18"></script>
+<script src="../srt.js?v=20"></script>
+<script src="../cues.js?v=20"></script>
+<script src="../sarvam.js?v=20"></script>
+<script src="../langs.js?v=20"></script>
+<script src="../numbers.js?v=20"></script>
+<script src="../updates.js?v=20"></script>
+<script src="../styles.js?v=20"></script>
+<script src="../polish.js?v=20"></script>
+<script src="../settings.js?v=20"></script>
+<script src="adapter.js?v=20"></script>
+<script src="app.js?v=20"></script>
 </body>
 </html>

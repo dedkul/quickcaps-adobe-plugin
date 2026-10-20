@@ -38,6 +38,8 @@ window.QCSettings = (function () {
     bleep: false, // mask profanity
     bilingual: false, // also make an English track (2x Sarvam usage)
     digits: false, // number words as digits, Indian grouping
+    style: "plain", // a QCStyles id (see styles.js)
+    extrasOpen: false, // the Extras section is folded until opened
     usage: { month: "", seconds: 0 },
     update: { checkedAt: 0, latest: "", url: "", dismissed: "", dismissedAt: 0 }, // see updates.js
   };
@@ -155,6 +157,22 @@ window.QCSettings = (function () {
     for (let i = 0; i < OTHER_KEYS.length; i++) if (OTHER_KEYS[i][0].test(key)) return OTHER_KEYS[i][1];
     return null;
   }
+  // What a key check means for the key: "ok" (works; out of credit still
+  // counts, the key itself is fine), "rejected" (Sarvam refused it, so it
+  // isn't saved), or "unchecked" (no answer, e.g. offline: kept, checked
+  // again later). res is QCSarvam.validateKey's result.
+  function keyCheckOutcome(res) {
+    if (res.ok) return "ok";
+    if (res.status === 402 || /credit has run out/.test(res.message || "")) return "ok";
+    if (res.status === 401 || res.status === 403) return "rejected";
+    return "unchecked";
+  }
+
+  // "Key ending a1b2": enough to recognise a key without showing it.
+  function keyTail(key) {
+    return key ? key.slice(-4) : "";
+  }
+
   function wrongKeyMessage(key) {
     const who = otherProvider(key);
     return who
@@ -164,6 +182,8 @@ window.QCSettings = (function () {
 
   return {
     cleanKey: cleanKey,
+    keyCheckOutcome: keyCheckOutcome,
+    keyTail: keyTail,
     wrongKeyMessage: wrongKeyMessage,
     load: load,
     save: save,

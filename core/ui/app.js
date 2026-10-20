@@ -65,10 +65,28 @@
     $("title").textContent = TITLES[name];
     $("btn-back").classList.toggle("hidden", name === "main" || name === "progress");
     $("btn-settings").classList.toggle("hidden", name !== "main");
-    if (name === "settings") paintUsage();
+    if (name === "settings") {
+      keyEditing = false;
+      paintKey();
+      recheckSavedKey();
+    }
     if (name === "main") paintResume();
     $("save-menu").classList.add("hidden");
+    fitGutters();
   }
+
+  // Header, content and footer share one side margin. A scrolling body
+  // loses width to its scrollbar, which would shift its centred column off
+  // the header's; so the scrollbar is tucked into the right margin instead.
+  function fitGutters() {
+    const base = parseFloat(getComputedStyle($("topbar")).paddingLeft) || 16;
+    all(".screen-scroll").forEach(function (el) {
+      const bar = el.offsetWidth - el.clientWidth;
+      el.style.paddingLeft = base + "px";
+      el.style.paddingRight = Math.max(0, base - bar) + "px";
+    });
+  }
+  window.addEventListener("resize", fitGutters);
 
   on($("btn-back"), function () {
     show(state.screen === "settings" && state.cues.length ? "review" : "main");
@@ -118,22 +136,21 @@
   /* ---------------- Main screen ---------------- */
 
   function paintScope() {
-    all("#scope-list .choice").forEach(function (el) {
-      el.classList.toggle("active", el.getAttribute("data-scope") === S.scope);
-    });
+    paintSeg("seg-scope", S.scope);
     paintCost();
   }
 
-  all("#scope-list .choice").forEach(function (el) {
-    on(el, function () {
-      if (el.classList.contains("unavailable")) {
-        notice("info", "Select one or more clips on the timeline first, then choose this option.");
-        return;
-      }
-      S.scope = el.getAttribute("data-scope");
-      QCSettings.save(S);
-      paintScope();
-    });
+  wireSeg("seg-scope", function (val) {
+    const el = document.querySelector('#seg-scope [data-val="' + val + '"]');
+    if (el.classList.contains("unavailable")) {
+      notice("info", val === "clips"
+        ? "Select one or more clips on the timeline first, then choose Clips."
+        : "Set an In and an Out mark on your sequence first, then choose In to Out.");
+      return;
+    }
+    S.scope = val;
+    QCSettings.save(S);
+    paintScope();
   });
 
   function paintSeg(segId, val) {
@@ -170,8 +187,6 @@
     });
     paintSeg("seg-script", effScript());
     $("script-hint").textContent = QCLangs.scriptHint(S.language, effScript());
-    const l = QCLangs.get(S.language);
-    $("lang-native").textContent = l && !l.auto && !l.english ? l.native : "";
   }
 
   wireSeg("seg-script", function (val) {
@@ -227,8 +242,33 @@
       : "A second caption track with English subtitles";
     $("digits-sub").textContent = digitsHint();
     $("opt-caps").classList.toggle("active", !!S.caps);
+    paintExtrasSummary();
     paintCost();
   }
+
+  // The folded Extras row says what's on, so it can stay closed.
+  function paintExtrasSummary() {
+    const names = all("#extras .extra.on").map(function (row) {
+      return row.querySelector(".extra-name").textContent;
+    });
+    $("extras-count").textContent = names.length + " on";
+    $("extras-count").classList.toggle("hidden", !names.length);
+    $("extras-summary").textContent = names.length
+      ? names.join(", ")
+      : "Clean-up, digits, Reels style, English track";
+  }
+
+  function paintExtrasOpen() {
+    $("extras").classList.toggle("hidden", !S.extrasOpen);
+    $("extras-head").classList.toggle("open", !!S.extrasOpen);
+    $("extras-chev-path").setAttribute("d", S.extrasOpen ? "M2 6.5 L5 3.5 L8 6.5" : "M2 3.5 L5 6.5 L8 3.5");
+    fitGutters();
+  }
+  on($("extras-head"), function () {
+    S.extrasOpen = !S.extrasOpen;
+    QCSettings.save(S);
+    paintExtrasOpen();
+  });
 
   all("#extras .extra").forEach(function (row) {
     on(row, function (e) {
@@ -299,6 +339,7 @@
     if (previewIndex >= cues.length) previewIndex = 0;
     const c = cues[previewIndex];
     $("preview-caption").textContent = QCSrt.wrapText(c.text, S.maxChars, S.maxLines);
+    QCStyles.applyPreview($("preview-caption"), S.style);
     $("preview-info").textContent =
       "Caption " + (previewIndex + 1) + " of " + cues.length + " · " + (c.end - c.start).toFixed(1) + " s";
   }
@@ -369,12 +410,12 @@
   async function refreshSequence() {
     try {
       state.seq = await host.getSequenceInfo();
-      const clipsEl = document.querySelector('#scope-list [data-scope="clips"]');
       const n = state.seq.selectedAudioClips || 0;
-      $("clips-note").textContent = n
-        ? n + (n > 1 ? " clips selected" : " clip selected")
-        : "Select clips on the timeline";
-      clipsEl.classList.toggle("unavailable", !state.seq.supportsClipScope || !n);
+      $("clips-note").textContent = n ? n + " selected" : "Select first";
+      document.querySelector('#seg-scope [data-val="clips"]').classList.toggle("unavailable", !state.seq.supportsClipScope || !n);
+      const io = state.seq.inOutSeconds || 0;
+      $("inout-note").textContent = io > 0 ? QCSrt.fmtDuration(io) : "No marks";
+      document.querySelector('#seg-scope [data-val="inout"]').classList.toggle("unavailable", !(io > 0));
       $("seq-dot").className = "status-dot ok";
       $("seq-text").textContent =
         state.seq.name + " · " + QCSrt.fmtDuration(state.seq.durationSeconds) +
@@ -903,68 +944,102 @@
 
   /* ---------------- Settings screen ---------------- */
 
-  function paintKeyStatus() {
-    const el = $("key-status");
-    if (S.keyValid === true) { el.textContent = "Key works"; el.className = "footnote ok"; }
-    else if (S.keyValid === false) { el.textContent = "Sarvam rejected this key"; el.className = "footnote bad"; }
-    else { el.textContent = S.apiKey ? "Not checked yet" : "No key added yet"; el.className = "footnote"; }
-  }
-
-  // macOS UXP can't read a password field's value, so the field is plain
-  // text while focused and masked only when idle.
+  // The key works like a connection: paste it (or press Enter, or Save)
+  // and it's checked and saved at once. Once saved it's never shown
+  // again, only its last four characters, with Change and Remove.
   const keyInput = $("inp-key");
-  let keyRevealed = false;
-  keyInput.value = S.apiKey;
+  let keyEditing = false; // replacing a saved key
+  let keyBusy = false;
 
-  function commitKey() {
-    const v = QCSettings.cleanKey(keyInput.value);
-    if (keyInput.value !== v) keyInput.value = v;
-    if (v !== S.apiKey) {
-      S.apiKey = v;
-      S.keyValid = null;
-      QCSettings.save(S);
-      paintKeyStatus();
-      const wrong = QCSettings.wrongKeyMessage(v);
-      if (wrong) notice("warn", wrong);
-    }
+  function paintKey(msg, bad) {
+    const saved = !!S.apiKey && S.keyValid !== false;
+    const showEntry = !saved || keyEditing;
+    $("key-entry").classList.toggle("hidden", !showEntry);
+    $("key-ok").classList.toggle("hidden", showEntry);
+    $("btn-key-cancel").classList.toggle("hidden", !(keyEditing && saved));
+    keyInput.disabled = keyBusy;
+    keyInput.classList.toggle("bad", !!bad);
+    setBusy($("btn-key-save"), keyBusy, keyBusy ? "Checking…" : "Save key");
+    $("key-msg").className = "footnote" + (bad ? " bad" : "");
+    $("key-msg").textContent = msg || (S.keyValid === false && S.apiKey
+      ? "Sarvam didn't accept the saved key. Paste a new one from dashboard.sarvam.ai."
+      : "Paste it and QuickCaps checks and saves it straight away.");
+    $("key-title").textContent = S.keyValid ? "Connected" : "Key saved";
+    $("key-tail").textContent = "Key ending " + QCSettings.keyTail(S.apiKey) +
+      (S.keyValid ? " · saved on this computer" : " · not checked yet");
+    paintUsage();
   }
-  keyInput.addEventListener("focus", function () { keyInput.type = "text"; });
-  keyInput.addEventListener("blur", function () {
-    commitKey();
-    if (!keyRevealed) keyInput.type = "password";
-  });
-  keyInput.addEventListener("change", commitKey);
 
-  on($("btn-key-eye"), function () {
-    if (keyInput.type === "text" && keyRevealed === false) commitKey();
-    keyRevealed = !keyRevealed;
-    keyInput.type = keyRevealed ? "text" : "password";
-    $("btn-key-eye").textContent = keyRevealed ? "Hide" : "Show";
-  });
-
-  on($("btn-key-check"), async function () {
-    commitKey();
-    if (!S.apiKey) {
-      notice("warn", "Paste your Sarvam API key first.");
+  async function submitKey() {
+    if (keyBusy) return;
+    const v = QCSettings.cleanKey(keyInput.value);
+    keyInput.value = v;
+    if (!v) {
+      paintKey("Paste your key first.", true);
       return;
     }
-    const wrong = QCSettings.wrongKeyMessage(S.apiKey);
+    const wrong = QCSettings.wrongKeyMessage(v);
     if (wrong) {
-      S.keyValid = false;
-      QCSettings.save(S);
-      paintKeyStatus();
-      notice("warn", wrong);
+      paintKey(wrong, true);
       return;
     }
-    const btn = $("btn-key-check");
-    if (btn.classList.contains("busy")) return;
-    setBusy(btn, true, "Checking…");
-    const res = host.mock ? { ok: true } : await QCSarvam.validateKey(S.apiKey);
-    S.keyValid = res.ok;
+    keyBusy = true;
+    paintKey("Checking with Sarvam…");
+    const res = host.mock ? { ok: true } : await QCSarvam.validateKey(v);
+    keyBusy = false;
+    const outcome = QCSettings.keyCheckOutcome(res);
+    if (outcome === "rejected") {
+      paintKey("Sarvam didn't accept this key. Copy it again from dashboard.sarvam.ai and paste it here.", true);
+      return;
+    }
+    S.apiKey = v;
+    S.keyValid = outcome === "ok" ? true : null;
     QCSettings.save(S);
-    paintKeyStatus();
-    if (!res.ok && res.message) notice("error", res.message);
-    setBusy(btn, false, "Check key");
+    keyEditing = false;
+    keyInput.value = "";
+    paintKey();
+    if (outcome === "unchecked") notice("warn", "Key saved, but Sarvam didn't answer, so it isn't checked yet. " + (res.message || ""));
+    else if (!res.ok && res.message) notice("warn", res.message);
+  }
+
+  // A key saved by an older version, or while offline: check it quietly
+  // the first time Settings opens.
+  async function recheckSavedKey() {
+    if (host.mock || !S.apiKey || S.keyValid !== null || keyBusy) return;
+    const res = await QCSarvam.validateKey(S.apiKey);
+    const outcome = QCSettings.keyCheckOutcome(res);
+    if (outcome === "unchecked") return;
+    S.keyValid = outcome === "ok";
+    QCSettings.save(S);
+    paintKey();
+  }
+
+  keyInput.addEventListener("paste", function () { setTimeout(submitKey, 0); });
+  keyInput.addEventListener("keydown", function (e) {
+    if (e.key === "Enter") {
+      e.preventDefault();
+      submitKey();
+    }
+  });
+  on($("btn-key-save"), submitKey);
+  on($("btn-key-change"), function () {
+    keyEditing = true;
+    keyInput.value = "";
+    paintKey();
+    keyInput.focus();
+  });
+  on($("btn-key-cancel"), function () {
+    keyEditing = false;
+    keyInput.value = "";
+    paintKey();
+  });
+  on($("btn-key-remove"), function () {
+    S.apiKey = "";
+    S.keyValid = null;
+    QCSettings.save(S);
+    keyEditing = false;
+    paintKey();
+    notice("info", "Key removed from this computer. It still works in your Sarvam account until you delete it there.");
   });
 
   setSelect($("inp-model"), S.model);
@@ -990,7 +1065,7 @@
   function paintUsage() { $("usage-val").textContent = QCSettings.usageLabel(S); }
 
   // Handy when friends report a problem: "which version are you on?"
-  $("version-line").textContent = "QuickCaps " + (host.pluginVersion ? "v" + host.pluginVersion : "preview");
+  $("version-line").textContent = "QuickCaps " + (host.pluginVersion || "preview") + " · free and open source";
 
   /* ---------------- Links + updates ---------------- */
 
@@ -1006,8 +1081,9 @@
       notice("info", "Couldn't open your browser. Go to " + url.replace(/^https:\/\//, "") + " instead.", null, null, true);
     }
   }
-  on($("btn-follow"), function () { openLink(X_PROFILE); });
-  on($("btn-request"), function () { openLink(X_PROFILE); });
+  on($("btn-x"), function () { openLink(X_PROFILE); });
+  on($("link-dashboard"), function () { openLink("https://dashboard.sarvam.ai"); });
+  on($("link-billing"), function () { openLink("https://dashboard.sarvam.ai"); });
 
   function paintUpdate() {
     const r = QCUpdates.pending(host.pluginVersion, S.update);
@@ -1041,7 +1117,8 @@
   paintExtras();
   paintWords();
   paintPace();
-  paintKeyStatus();
+  paintKey();
+  paintExtrasOpen();
   paintUsage();
   show("main");
   paintUpdate();
@@ -1049,5 +1126,6 @@
   setTimeout(checkForUpdate, 1500);
   setInterval(function () {
     if (state.screen === "main" && !state.busy) refreshSequence();
+    fitGutters();
   }, 4000);
 })();

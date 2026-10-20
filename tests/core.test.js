@@ -4,7 +4,7 @@ const assert = require("assert");
 global.window = global;
 // Run from the project root:  node tests/core.test.js
 const root = process.argv[2] || path.join(__dirname, "..");
-for (const f of ["srt.js", "cues.js", "sarvam.js", "langs.js", "numbers.js", "updates.js", "polish.js", "settings.js"]) eval(fs.readFileSync(path.join(root, "core", f), "utf8"));
+for (const f of ["srt.js", "cues.js", "sarvam.js", "langs.js", "numbers.js", "updates.js", "styles.js", "polish.js", "settings.js"]) eval(fs.readFileSync(path.join(root, "core", f), "utf8"));
 
 // 70 s of 16 kHz mono 16-bit silence = what the bundled preset produces.
 function wav(seconds) {
@@ -183,6 +183,25 @@ console.log("ok  srt output starts:", JSON.stringify(srt.split("\n").slice(0, 3)
   assert.strictEqual(QCSettings.load().maxWords, 2);
   delete global.localStorage;
   console.log("ok  settings: new defaults; unknown saved language falls back to Hindi");
+}
+
+// API key as a connection: what a check means, last four only, styles drive the preview.
+{
+  const o = QCSettings.keyCheckOutcome;
+  assert.strictEqual(o({ ok: true }), "ok");
+  assert.strictEqual(o({ ok: false, status: 403, message: "Sarvam rejected the API key. Check it in Settings." }), "rejected", "bad key isn't saved");
+  assert.strictEqual(o({ ok: false, status: 401, message: "x" }), "rejected");
+  assert.strictEqual(o({ ok: false, status: 403, message: "Your Sarvam credit has run out. Add credit…" }), "ok", "out of credit: the key itself works");
+  assert.strictEqual(o({ ok: false, status: 0, message: "Couldn't reach Sarvam." }), "unchecked", "offline: keep it, check later");
+  assert.strictEqual(o({ ok: false, status: 500, message: "x" }), "unchecked");
+  assert.strictEqual(QCSettings.keyTail("sk_live_7f3d9c2ea1b2"), "a1b2");
+  assert.strictEqual(QCSettings.DEFAULTS.style, "plain");
+  assert.strictEqual(QCStyles.get("nope").id, "plain", "unknown style falls back to plain");
+  const el = { style: {} };
+  QCStyles.applyPreview(el, "plain");
+  assert.strictEqual(el.style.backgroundColor, "#000000");
+  assert(QCStyles.LIST.every((st) => st.kind === "captions" || (st.kind === "mogrt" && st.mogrt)), "mogrt styles name their template");
+  console.log("ok  key check outcomes (rejected not saved, offline kept), last-4 tail, style-driven preview");
 }
 
 // Upload format: capture what transcribe() would send to Sarvam.

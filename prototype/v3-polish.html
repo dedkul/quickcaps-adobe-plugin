@@ -1,0 +1,468 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>QuickCaps v3 polish</title>
+<!--
+  Design prototype only (not loaded by the plugin). Same tokens as
+  core/ui/styles.css, and only CSS that Premiere's UXP renderer supports
+  inside the panels (no gap, transform, animation or positioning there;
+  the board around the panels is free).
+-->
+<style>
+  :root {
+    --bg: #1e1e1e; --surface: #262626; --surface-hover: #2e2e2e; --inset: #181818;
+    --line: #333333; --line-strong: #454545;
+    --text: #e4e4e4; --text-2: #a3a3a3; --text-3: #7a7a7a;
+    --accent: #4b8ff0; --accent-hover: #63a0f5; --accent-tint: #1f2c40; --accent-text: #a9c8f5;
+    --success: #46b886; --success-tint: #1b2d25;
+    --danger: #e5666a; --danger-tint: #33201f;
+    --warning: #e3a74a; --warning-tint: #33291a;
+    --gutter: 16px;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: #111; color: var(--text); font-family: -apple-system, "Segoe UI", "Noto Sans", "Noto Sans Devanagari", sans-serif; font-size: 12px; padding: 28px 24px 48px; }
+  h1 { font-size: 18px; font-weight: 600; margin-bottom: 6px; }
+  .lede { color: var(--text-2); font-size: 13px; line-height: 1.55; max-width: 760px; margin-bottom: 14px; }
+  .toolbar { display: flex; align-items: center; margin-bottom: 22px; font-size: 12px; color: var(--text-2); }
+  .toolbar label { display: flex; align-items: center; cursor: pointer; margin-right: 18px; }
+  .toolbar input { margin-right: 6px; }
+  .board { display: flex; flex-wrap: wrap; gap: 32px; align-items: flex-start; }
+  .frame { width: 340px; }
+  .frame-label { font-size: 11px; color: var(--text-2); margin-bottom: 8px; display: flex; align-items: center; }
+  .frame-label .tag { margin-left: 8px; font-size: 10px; padding: 1px 6px; border-radius: 4px; background: var(--warning-tint); color: var(--warning); }
+
+  /* ---------- Panel ---------- */
+  .panel { position: relative; background: var(--bg); border: 1px solid var(--line-strong); border-radius: 10px; overflow: hidden; display: flex; flex-direction: column; }
+  .bar { display: flex; align-items: center; padding: 10px var(--gutter); border-bottom: 1px solid var(--line); }
+  .brand { display: flex; align-items: center; flex: 1; font-size: 13px; font-weight: 600; }
+  .brand svg { margin-right: 8px; }
+  .back { display: flex; align-items: center; justify-content: center; width: 24px; height: 24px; margin: 0 6px 0 -5px; border-radius: 6px; cursor: pointer; }
+  .back:hover { background: var(--surface-hover); }
+  .ghost { display: flex; align-items: center; border: 1px solid var(--line-strong); border-radius: 6px; padding: 4px 9px; font-size: 11px; cursor: pointer; }
+  .ghost:hover { background: var(--surface-hover); }
+  .ghost svg { margin-right: 6px; }
+  .body { padding: 12px var(--gutter) 18px; }
+  .foot { border-top: 1px solid var(--line); padding: 10px var(--gutter) 12px; }
+
+  .label { font-size: 11px; font-weight: 600; color: var(--text-2); margin: 16px 0 7px; display: flex; align-items: baseline; }
+  .label:first-child { margin-top: 2px; }
+  .label .aside { margin-left: auto; font-weight: 400; color: var(--text-3); }
+  .hint { font-size: 11px; color: var(--text-3); margin-top: 6px; line-height: 1.4; }
+
+  .seg { display: flex; padding: 3px; border-radius: 8px; background: var(--inset); border: 1px solid var(--line); }
+  .seg div { flex: 1; text-align: center; padding: 5px 2px; border-radius: 6px; color: var(--text-2); cursor: pointer; border: 1px solid transparent; font-size: 12px; }
+  .seg div:hover { background: var(--surface); }
+  .seg div small { display: block; font-size: 10px; color: var(--text-3); margin-top: 1px; }
+  .seg .on, .seg .on:hover { background: var(--surface-hover); border-color: var(--line-strong); color: #fff; font-weight: 600; }
+  .seg .on small { color: var(--text-2); font-weight: 400; }
+
+  select, input[type=text], textarea { width: 100%; font: inherit; font-size: 12px; color: var(--text); background: var(--inset); border: 1px solid var(--line-strong); border-radius: 6px; padding: 7px 8px; }
+  select:focus, input:focus, textarea:focus { outline: none; border-color: var(--accent); }
+  textarea { height: 70px; resize: none; line-height: 1.45; }
+
+  .row-card { display: flex; align-items: center; margin-top: 8px; padding: 8px 11px; border: 1px solid var(--line); border-radius: 8px; background: var(--surface); }
+  .row-card .txt { flex: 1; min-width: 0; }
+  .name { font-size: 12px; color: var(--text); }
+  .sub { font-size: 11px; color: var(--text-3); margin-top: 2px; line-height: 1.35; }
+  .stepper { display: flex; align-items: center; border: 1px solid var(--line-strong); border-radius: 6px; overflow: hidden; margin-left: 10px; }
+  .stepper div { width: 26px; height: 24px; display: flex; align-items: center; justify-content: center; color: var(--text-2); cursor: pointer; }
+  .stepper div:hover { background: var(--surface-hover); }
+  .stepper span { min-width: 56px; height: 24px; line-height: 23px; text-align: center; font-size: 11px; border-left: 1px solid var(--line-strong); border-right: 1px solid var(--line-strong); }
+
+  .preview { margin-top: 10px; border: 1px solid var(--line); border-radius: 8px; overflow: hidden; background: var(--surface); }
+  .screen { background: #0b0b0b; height: 112px; display: flex; align-items: flex-end; justify-content: center; padding: 12px; }
+  .cap { background: #000; color: #fff; font-size: 13px; padding: 3px 8px; border-radius: 2px; text-align: center; }
+  .preview-foot { display: flex; align-items: center; padding: 7px 11px; border-top: 1px solid var(--line); font-size: 11px; color: var(--text-2); }
+  .preview-foot b { margin-left: auto; color: var(--accent-text); font-weight: 600; cursor: pointer; }
+
+  /* Extras: a disclosure row that opens in place. */
+  .disclosure { margin-top: 16px; border: 1px solid var(--line); border-radius: 8px; background: var(--surface); overflow: hidden; }
+  .disc-head { display: flex; align-items: center; padding: 10px 11px; cursor: pointer; }
+  .disc-head:hover { background: var(--surface-hover); }
+  .disc-head .txt { flex: 1; min-width: 0; }
+  .disc-head .name { font-weight: 600; }
+  .count { font-size: 10px; font-weight: 600; padding: 1px 6px; border-radius: 8px; background: var(--accent-tint); color: var(--accent-text); margin-left: 6px; }
+  .chev { margin-left: 10px; color: var(--text-2); }
+  .disc-body { border-top: 1px solid var(--line); }
+  .extra { display: flex; align-items: flex-start; padding: 9px 11px; border-bottom: 1px solid var(--line); cursor: pointer; }
+  .extra:last-child { border-bottom: 0; }
+  .extra:hover { background: var(--surface-hover); }
+  .switch { width: 26px; height: 15px; border-radius: 8px; background: var(--line-strong); margin: 1px 10px 0 0; flex-shrink: 0; display: flex; align-items: center; padding: 0 2px; }
+  .switch i { width: 11px; height: 11px; border-radius: 6px; background: #bbb; }
+  .extra.on .switch { background: var(--accent); justify-content: flex-end; }
+  .extra.on .switch i { background: #fff; }
+  .badge { font-size: 9.5px; font-weight: 600; padding: 2px 6px; border-radius: 4px; white-space: nowrap; margin-left: 6px; }
+  .free { background: var(--success-tint); color: var(--success); }
+  .double { background: var(--warning-tint); color: var(--warning); }
+
+  .cost { display: flex; font-size: 11px; color: var(--text-2); margin-bottom: 8px; }
+  .cost b { color: var(--text); margin-left: auto; }
+  .primary { background: var(--accent); color: #fff; font-weight: 600; font-size: 13px; text-align: center; height: 34px; line-height: 34px; border-radius: 7px; cursor: pointer; }
+  .primary:hover { background: var(--accent-hover); }
+  .status { display: flex; align-items: center; justify-content: center; font-size: 11px; color: var(--text-2); margin-top: 8px; }
+  .dot { width: 6px; height: 6px; border-radius: 3px; background: var(--success); margin-right: 6px; }
+
+  /* Notices: tinted, with an icon instead of a coloured side stripe. */
+  .notice { display: flex; align-items: flex-start; margin: 10px var(--gutter) 0; padding: 9px 10px; border-radius: 7px; background: var(--success-tint); }
+  .notice svg { flex-shrink: 0; margin: 1px 8px 0 0; }
+  .notice .txt { flex: 1; }
+  .notice .name { font-size: 12px; }
+  .notice .act { color: var(--accent-text); font-weight: 600; margin-left: 10px; cursor: pointer; white-space: nowrap; }
+  .notice .act.muted { color: var(--text-3); font-weight: 400; }
+
+  /* ---------- Settings ---------- */
+  .group { padding: 14px 0 16px; border-bottom: 1px solid var(--line); }
+  .group:first-child { padding-top: 2px; }
+  .group:last-child { border-bottom: 0; padding-bottom: 0; }
+  .group-title { font-size: 12px; font-weight: 600; color: var(--text); margin-bottom: 4px; }
+  .group-sub { font-size: 11px; color: var(--text-3); line-height: 1.45; margin-bottom: 10px; }
+  a, .link { color: var(--accent-text); text-decoration: none; font-weight: 600; cursor: pointer; }
+  a:hover, .link:hover { color: #fff; }
+  .key-row { display: flex; align-items: center; }
+  .key-row input { flex: 1; margin-right: 8px; }
+  .btn { flex-shrink: 0; height: 30px; padding: 0 12px; border-radius: 6px; font-size: 12px; font-weight: 600; display: flex; align-items: center; cursor: pointer; }
+  .btn.blue { background: var(--accent); color: #fff; }
+  .btn.blue:hover { background: var(--accent-hover); }
+  .btn.blue.busy { opacity: .6; cursor: default; }
+  .btn.quiet { border: 1px solid var(--line-strong); color: var(--text); font-weight: 400; background: var(--surface); }
+  .btn.quiet:hover { background: var(--surface-hover); }
+  .field-msg { display: flex; align-items: center; font-size: 11px; margin-top: 7px; color: var(--text-3); line-height: 1.4; }
+  .field-msg.bad { color: var(--danger); }
+  input.bad { border-color: var(--danger); }
+  .connected { display: flex; align-items: center; padding: 10px 11px; border-radius: 8px; background: var(--success-tint); }
+  .connected .txt { flex: 1; }
+  .connected .name { font-weight: 600; }
+  .connected .sub { color: #8fc9ad; }
+  .connected .link { margin-left: 12px; font-size: 11px; }
+  .connected .link.muted { color: #8fc9ad; font-weight: 400; }
+  .meter { display: flex; align-items: baseline; margin-top: 12px; font-size: 11px; color: var(--text-2); }
+  .meter b { color: var(--text); margin-left: 6px; }
+  .meter a { margin-left: auto; font-size: 11px; }
+  .about { display: flex; align-items: center; }
+  .about .txt { flex: 1; min-width: 0; margin-right: 10px; }
+  .x-btn { display: flex; align-items: center; height: 30px; padding: 0 11px; border-radius: 6px; border: 1px solid var(--line-strong); background: var(--surface); font-size: 12px; white-space: nowrap; cursor: pointer; }
+  .x-btn:hover { background: var(--surface-hover); border-color: #555; }
+  .x-btn svg { margin-right: 7px; }
+  .version { font-size: 11px; color: var(--text-3); margin-top: 12px; }
+
+  /* State switcher above the Settings frame (prototype only). */
+  .states { display: flex; flex-wrap: wrap; margin-bottom: 10px; }
+  .states div { font-size: 11px; padding: 4px 9px; margin: 0 6px 6px 0; border-radius: 12px; border: 1px solid var(--line-strong); color: var(--text-2); cursor: pointer; }
+  .states .on { background: var(--accent-tint); border-color: var(--accent); color: var(--accent-text); }
+
+  /* Future frame */
+  .styles { display: flex; padding: 8px 8px 0; background: var(--surface); }
+  .styles div { flex: 1; text-align: center; font-size: 11px; color: var(--text-2); padding: 6px 2px; margin-right: 6px; border-radius: 6px; border: 1px solid var(--line); cursor: pointer; }
+  .styles div:last-child { margin-right: 0; }
+  .styles .on { border-color: var(--accent); color: #fff; background: var(--accent-tint); }
+
+  /* Alignment guides (prototype only) */
+  .guides .panel::before, .guides .panel::after { content: ""; position: absolute; top: 0; bottom: 0; width: 1px; background: rgba(255, 70, 90, .55); pointer-events: none; z-index: 2; }
+  .guides .panel::before { left: var(--gutter); }
+  .guides .panel::after { right: var(--gutter); }
+
+  .notes { margin-top: 34px; max-width: 900px; color: var(--text-2); font-size: 12.5px; line-height: 1.6; }
+  .notes h2 { color: var(--text); font-size: 14px; margin: 20px 0 6px; }
+  .notes b { color: var(--text); }
+  .notes li { margin: 0 0 4px 18px; }
+  .hidden { display: none !important; }
+</style>
+</head>
+<body>
+<h1>QuickCaps v3: polish pass</h1>
+<p class="lede">Everything here is clickable. Open and close <b>Extras</b>, change the language, and on the Settings frame paste anything into the key field (a key starting with <code>sk_</code> counts as valid) or jump between the four key states. Turn on the guides to check that every screen lines up on the same left and right edges.</p>
+<div class="toolbar">
+  <label><input type="checkbox" id="guides" /> Show alignment guides</label>
+</div>
+
+<div class="board" id="board">
+
+  <!-- 1. MAIN -->
+  <div class="frame">
+    <div class="frame-label">1. Main screen</div>
+    <div class="panel">
+      <div class="bar">
+        <div class="brand"><svg width="18" height="14" viewBox="0 0 18 14"><rect width="18" height="14" rx="3" fill="#3f8ae0"/><rect x="3" y="8" width="7" height="2" rx="1" fill="#fff"/><rect x="11.5" y="8" width="3.5" height="2" rx="1" fill="#fff"/></svg>QuickCaps</div>
+        <div class="ghost" data-go="settings"><svg width="13" height="11" viewBox="0 0 14 12"><rect y="1" width="14" height="1.6" rx=".8" fill="#9a9a9a"/><rect y="5.2" width="14" height="1.6" rx=".8" fill="#9a9a9a"/><rect y="9.4" width="14" height="1.6" rx=".8" fill="#9a9a9a"/><rect x="8" width="3.6" height="3.6" rx="1.8" fill="#d6d6d6"/><rect x="2.5" y="4.2" width="3.6" height="3.6" rx="1.8" fill="#d6d6d6"/><rect x="6.5" y="8.4" width="3.6" height="3.6" rx="1.8" fill="#d6d6d6"/></svg>Settings</div>
+      </div>
+      <div class="notice">
+        <svg width="14" height="14" viewBox="0 0 14 14"><circle cx="7" cy="7" r="7" fill="#46b886"/><path d="M7 3.2 L7 8.2 M4.8 6.2 L7 8.4 L9.2 6.2" stroke="#1b2d25" stroke-width="1.6" fill="none"/></svg>
+        <div class="txt"><div class="name">QuickCaps 0.10.0 is out</div><div class="sub">Install it the same way as before.</div></div>
+        <span class="act">Download</span><span class="act muted">Later</span>
+      </div>
+      <div class="body">
+        <div class="label">Caption source</div>
+        <div class="seg" id="src">
+          <div class="on">Sequence<small>Start to end</small></div>
+          <div>In to Out<small>0:34</small></div>
+          <div>Clips<small>2 selected</small></div>
+        </div>
+
+        <div class="label">Spoken language</div>
+        <select id="lang">
+          <option value="unknown">Detect automatically</option>
+          <option disabled>──────────</option>
+          <option value="hi" selected>Hindi · हिंदी</option>
+          <option value="ta">Tamil · தமிழ்</option>
+          <option value="mr">Marathi · मराठी</option>
+          <option value="en">English</option>
+        </select>
+
+        <div class="label">Caption script</div>
+        <div class="seg" id="script"></div>
+        <div class="hint" id="script-hint"></div>
+
+        <div class="label">Caption pacing</div>
+        <div class="seg" id="pace">
+          <div>Fast<small>Reels</small></div>
+          <div class="on">Balanced<small>Most videos</small></div>
+          <div>Relaxed<small>YouTube</small></div>
+          <div>Custom<small>Your rules</small></div>
+        </div>
+        <div class="row-card">
+          <div class="txt"><div class="name">Words per caption</div><div class="sub" id="w-sub">Auto fits by length</div></div>
+          <div class="stepper"><div id="w-minus">−</div><span id="w-val">Auto</span><div id="w-plus">+</div></div>
+        </div>
+
+        <div class="preview">
+          <div class="screen"><span class="cap" id="pv">नमस्ते दोस्तों, आज हम बात करेंगे</span></div>
+          <div class="preview-foot"><span>Caption 1 of 4 · 2.4 s</span><b>Next</b></div>
+        </div>
+
+        <div class="disclosure" id="extras">
+          <div class="disc-head" id="extras-head">
+            <div class="txt">
+              <div class="name">Extras <span class="count" id="x-count">2 on</span></div>
+              <div class="sub" id="x-summary">Clean up fillers, Numbers as digits</div>
+            </div>
+            <svg class="chev" id="chev" width="10" height="10" viewBox="0 0 10 10"><path d="M2 3.5 L5 6.5 L8 3.5" stroke="#a3a3a3" stroke-width="1.5" fill="none"/></svg>
+          </div>
+          <div class="disc-body hidden" id="extras-body">
+            <div class="extra" data-k="Reels style"><span class="switch"><i></i></span><div class="txt"><div class="name">Reels style <span class="badge free">Free</span></div><div class="sub">No full stops at the end of captions</div></div></div>
+            <div class="extra on" data-k="Clean up fillers"><span class="switch"><i></i></span><div class="txt"><div class="name">Clean up fillers <span class="badge free">Free</span></div><div class="sub">Removes umm, uh, hmm, अं</div></div></div>
+            <div class="extra on" data-k="Numbers as digits"><span class="switch"><i></i></span><div class="txt"><div class="name">Numbers as digits <span class="badge free">Free</span></div><div class="sub">“चार हज़ार पांच सौ” becomes 4,500</div></div></div>
+            <div class="extra" data-k="Bleep bad words"><span class="switch"><i></i></span><div class="txt"><div class="name">Bleep bad words <span class="badge free">Free</span></div><div class="sub">Shows them as ****</div></div></div>
+            <div class="extra" data-k="English track"><span class="switch"><i></i></span><div class="txt"><div class="name">Add English track <span class="badge double">2× cost</span></div><div class="sub">A second caption track with English subtitles</div></div></div>
+          </div>
+        </div>
+      </div>
+      <div class="foot">
+        <div class="cost">Estimated Sarvam cost <b>~₹2.27</b></div>
+        <div class="primary">Generate captions</div>
+        <div class="status"><span class="dot"></span>Vlog_final · 04:32</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 2. SETTINGS -->
+  <div class="frame">
+    <div class="frame-label">2. Settings (pick a key state)</div>
+    <div class="states" id="states">
+      <div data-s="empty" class="on">No key yet</div>
+      <div data-s="checking">Checking</div>
+      <div data-s="ok">Connected</div>
+      <div data-s="bad">Not accepted</div>
+    </div>
+    <div class="panel">
+      <div class="bar">
+        <div class="brand"><span class="back"><svg width="14" height="12" viewBox="0 0 14 12"><path d="M0.6 6 L5.6 1 L7 2.4 L4.4 5 L13.4 5 L13.4 7 L4.4 7 L7 9.6 L5.6 11 Z" fill="#c8c8c8"/></svg></span>Settings</div>
+      </div>
+      <div class="body">
+        <div class="group">
+          <div class="group-title">Sarvam account</div>
+
+          <div id="k-entry">
+            <div class="group-sub">QuickCaps turns speech into text with your own Sarvam account. Get a key at <a href="#">dashboard.sarvam.ai</a>; new accounts get ₹100 free.</div>
+            <div class="key-row">
+              <input type="text" id="k-input" placeholder="Paste your API key" autocomplete="off" spellcheck="false" />
+              <div class="btn blue" id="k-save">Save key</div>
+            </div>
+            <div class="field-msg" id="k-msg">Paste it and QuickCaps checks and saves it straight away.</div>
+          </div>
+
+          <div id="k-ok" class="hidden">
+            <div class="connected">
+              <svg width="16" height="16" viewBox="0 0 16 16" style="margin-right:9px;flex-shrink:0"><circle cx="8" cy="8" r="8" fill="#46b886"/><path d="M4.5 8.2 L7 10.6 L11.6 5.6" stroke="#fff" stroke-width="1.8" fill="none"/></svg>
+              <div class="txt"><div class="name">Connected</div><div class="sub" id="k-tail">Key ending a1b2 · saved on this computer</div></div>
+              <span class="link" id="k-change">Change</span>
+              <span class="link muted" id="k-remove">Remove</span>
+            </div>
+            <div class="meter">This month <b>42 min · ~₹21</b><a href="#">Billing ↗</a></div>
+          </div>
+        </div>
+
+        <div class="group">
+          <div class="group-title">Transcription</div>
+          <div class="label" style="margin-top:8px">Model</div>
+          <select><option>Saaras v4 · latest, recommended</option><option>Saaras v3</option></select>
+          <div class="label">Names and words <span class="aside">3 of 50</span></div>
+          <textarea>QuickCaps
+Ashish
+बेंगलुरु</textarea>
+          <div class="hint">Spells names, brands, and slang the way you write them.</div>
+        </div>
+
+        <div class="group">
+          <div class="about">
+            <div class="txt">
+              <div class="group-title">Made by Ashish</div>
+              <div class="group-sub" style="margin:0">Found a bug, or want a feature? Tell me on X.</div>
+            </div>
+            <div class="x-btn"><svg width="12" height="12" viewBox="0 0 24 24"><path d="M18.244 2.25 L21.552 2.25 L14.325 10.51 L22.827 21.75 L16.17 21.75 L10.956 14.933 L4.99 21.75 L1.68 21.75 L9.41 12.915 L1.254 2.25 L8.08 2.25 L12.793 8.481 Z M17.083 19.77 L18.916 19.77 L7.084 4.126 L5.117 4.126 Z" fill="#e4e4e4"/></svg>@feat_ashish</div>
+          </div>
+          <div class="version">QuickCaps 0.10.0 · free and open source</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 3. LATER: STYLES -->
+  <div class="frame">
+    <div class="frame-label">3. Later: caption styles <span class="tag">Not in this release</span></div>
+    <div class="panel">
+      <div class="body">
+        <div class="label">Caption style</div>
+        <div class="preview" style="margin-top:0">
+          <div class="styles" id="styles">
+            <div class="on" data-st="plain">Plain</div>
+            <div data-st="box">Box</div>
+            <div data-st="shadow">Shadow</div>
+            <div data-st="pop">Pop</div>
+          </div>
+          <div class="screen" style="height:150px;background:#0b0b0b;margin-top:8px"><span class="cap" id="st-cap">आज हम बात करेंगे</span></div>
+          <div class="preview-foot"><span id="st-meta">Caption track · edit in Track Style</span></div>
+        </div>
+        <div class="hint">The preview you already have becomes the style picker. Plain stays a normal caption track; styled ones arrive as motion graphics clips on a video track.</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="notes">
+  <h2>What changed and why</h2>
+  <ul>
+    <li><b>Everything lines up.</b> Header, content, and the Generate bar now share one 16 px edge on both sides. The middle used to be pushed over by the space reserved for the scrollbar; the panel now measures the scrollbar and tucks it into the right margin. Turn on the guides to check.</li>
+    <li><b>Less scrolling.</b> Caption source becomes a three-way switch like the others (it was a tall list). Extras fold into one row that says what's on, so the main screen fits without scrolling on a normal docked panel. It opens in place, no popup.</li>
+    <li><b>Spoken language</b> loses the repeated name on the right and the line under it. The menu already says it.</li>
+    <li><b>The API key behaves like a connection, not a form.</b> Pasting checks and saves the key at once (Enter does the same, and <i>Save key</i> is there for anyone who types it). You always see the result: Checking, then <i>Connected</i> with the last four characters, or a plain reason it failed. The full key is never shown again; <i>Change</i> and <i>Remove</i> sit next to it. This month's usage moved into the same block, since it is that account's spending.</li>
+    <li><b>One way to reach you.</b> "Follow" and "Request a feature" both went to the same page, so they're now one button with your handle, under "Made by Ashish" and a line saying what to send. The version moves to the bottom as small print, where people look for it.</li>
+    <li><b>Settings in groups</b> (Sarvam account, Transcription, about) divided by thin lines instead of floating labels.</li>
+    <li><b>Notices drop the coloured stripe</b> down their left edge for a soft tint and an icon. The stripe is the most common tell of AI-made interfaces.</li>
+    <li><b>"No extra cost" badges</b> become "Free", and "2× Sarvam usage" becomes "2× cost", so badges fit beside the name on narrow panels.</li>
+  </ul>
+  <h2>Caption styles later (frame 3)</h2>
+  <ul>
+    <li>The preview frame becomes the style picker, so nothing else on the screen moves when styles arrive. The code for this release will already draw the preview from a "style" description, so adding styles later is adding entries, not rebuilding the screen.</li>
+    <li>Plain stays a normal Premiere caption track. A styled caption becomes a motion graphics template (.mogrt) clip per caption on a video track, with the text filled in by QuickCaps.</li>
+  </ul>
+</div>
+
+<script>
+  const $ = (id) => document.getElementById(id);
+  $("guides").addEventListener("change", (e) => $("board").classList.toggle("guides", e.target.checked));
+
+  // Segmented controls
+  document.querySelectorAll(".seg").forEach((seg) => seg.addEventListener("click", (e) => {
+    const d = e.target.closest(".seg > div"); if (!d) return;
+    seg.querySelectorAll(":scope > div").forEach((x) => x.classList.toggle("on", x === d));
+    if (seg.id === "script") paintHint();
+  }));
+
+  // Language -> script buttons
+  const L = {
+    hi: { opts: [["हिंदी", "Hindi"], ["Hinglish", "Roman letters"], ["Mixed", "हिंदी + English"], ["English", "Translated"]], name: "Hindi", rom: "Hinglish", pv: "नमस्ते दोस्तों, आज हम बात करेंगे" },
+    ta: { opts: [["தமிழ்", "Tamil"], ["Tanglish", "Roman letters"], ["Mixed", "தமிழ் + English"], ["English", "Translated"]], name: "Tamil", rom: "Tanglish", pv: "வணக்கம் நண்பர்களே" },
+    mr: { opts: [["मराठी", "Marathi"], ["Roman", "English letters"], ["Mixed", "मराठी + English"], ["English", "Translated"]], name: "Marathi", rom: "Roman", pv: "नमस्कार मित्रांनो" },
+    en: { opts: [["English", "As spoken"]], name: "English", pv: "Hello friends, today we'll talk" },
+    unknown: { opts: [["Original", "As spoken"], ["Roman", "English letters"], ["Mixed", "+ English"], ["English", "Translated"]], name: "", pv: "Captions in the language Sarvam hears" },
+  };
+  function paintScript() {
+    const l = L[$("lang").value];
+    $("script").innerHTML = l.opts.map((o, i) => `<div class="${i === 0 ? "on" : ""}">${o[0]}<small>${o[1]}</small></div>`).join("");
+    $("pv").textContent = l.pv;
+    paintHint();
+  }
+  function paintHint() {
+    const l = L[$("lang").value];
+    const i = [...$("script").children].findIndex((d) => d.classList.contains("on"));
+    $("script-hint").textContent = $("lang").value === "en" ? "English audio gets English captions." :
+      $("lang").value === "unknown" ? "Sarvam works out the language. Pick it yourself for the best results." :
+      ["Written in " + l.name + " script, the way it's spoken.", l.rom + ": " + l.name + " typed in English letters.", l.name + " in its own script, English words left in English.", "English subtitles, translated from " + l.name + "."][i];
+  }
+  $("lang").addEventListener("change", paintScript);
+  paintScript();
+
+  // Words per caption
+  let words = 0;
+  function paintWords() {
+    $("w-val").textContent = words ? words + (words === 1 ? " word" : " words") : "Auto";
+    $("w-sub").textContent = words ? "At most " + words + ", even if more would fit" : "Auto fits by length";
+  }
+  $("w-minus").onclick = () => { words = Math.max(0, words - 1); paintWords(); };
+  $("w-plus").onclick = () => { words = Math.min(6, words + 1); paintWords(); };
+
+  // Extras disclosure
+  $("extras-head").onclick = () => {
+    const open = $("extras-body").classList.toggle("hidden") === false;
+    $("chev").innerHTML = open ? '<path d="M2 6.5 L5 3.5 L8 6.5" stroke="#a3a3a3" stroke-width="1.5" fill="none"/>' : '<path d="M2 3.5 L5 6.5 L8 3.5" stroke="#a3a3a3" stroke-width="1.5" fill="none"/>';
+  };
+  function paintExtras() {
+    const on = [...document.querySelectorAll(".extra.on")].map((e) => e.dataset.k);
+    $("x-count").textContent = on.length + " on";
+    $("x-count").classList.toggle("hidden", !on.length);
+    $("x-summary").textContent = on.length ? on.join(", ") : "Clean-up, digits, Reels style, English track";
+  }
+  document.querySelectorAll(".extra").forEach((x) => x.onclick = () => { x.classList.toggle("on"); paintExtras(); });
+  paintExtras();
+
+  // Settings: key states
+  function keyState(s, key) {
+    document.querySelectorAll("#states div").forEach((d) => d.classList.toggle("on", d.dataset.s === s));
+    $("k-entry").classList.toggle("hidden", s === "ok");
+    $("k-ok").classList.toggle("hidden", s !== "ok");
+    const inp = $("k-input"), btn = $("k-save"), msg = $("k-msg");
+    inp.disabled = s === "checking";
+    inp.classList.toggle("bad", s === "bad");
+    btn.classList.toggle("busy", s === "checking");
+    btn.textContent = s === "checking" ? "Checking…" : "Save key";
+    msg.classList.toggle("bad", s === "bad");
+    msg.textContent = s === "checking" ? "Checking with Sarvam…" :
+      s === "bad" ? "Sarvam didn't accept this key. Copy it again from dashboard.sarvam.ai and paste it here." :
+      "Paste it and QuickCaps checks and saves it straight away.";
+    if (s === "ok" && key) $("k-tail").textContent = "Key ending " + key.slice(-4) + " · saved on this computer";
+    if (s === "empty") inp.value = "";
+  }
+  function submitKey() {
+    const k = $("k-input").value.trim();
+    if (!k) return;
+    keyState("checking");
+    setTimeout(() => keyState(/^sk_/.test(k) ? "ok" : "bad", k), 1100);
+  }
+  document.querySelectorAll("#states div").forEach((d) => d.onclick = () => {
+    if (d.dataset.s === "checking") $("k-input").value = "sk_live_7f3d9c2ea1b2";
+    if (d.dataset.s === "bad") $("k-input").value = "sk-proj-abc123";
+    keyState(d.dataset.s, "sk_live_7f3d9c2ea1b2");
+  });
+  $("k-input").addEventListener("paste", () => setTimeout(submitKey, 0));
+  $("k-input").addEventListener("keydown", (e) => { if (e.key === "Enter") submitKey(); });
+  $("k-save").onclick = submitKey;
+  $("k-change").onclick = () => { keyState("empty"); $("k-input").focus(); };
+  $("k-remove").onclick = () => keyState("empty");
+
+  // Future: styles
+  const ST = {
+    plain: [{ background: "#000", textShadow: "none", fontWeight: "400", fontSize: "13px", color: "#fff", padding: "3px 8px" }, "Caption track · edit in Track Style"],
+    box: [{ background: "rgba(20,20,20,.82)", textShadow: "none", fontWeight: "600", fontSize: "14px", color: "#fff", padding: "6px 12px" }, "Motion graphics · rounded box"],
+    shadow: [{ background: "transparent", textShadow: "0 2px 6px rgba(0,0,0,.9)", fontWeight: "700", fontSize: "16px", color: "#fff", padding: "0" }, "Motion graphics · drop shadow"],
+    pop: [{ background: "#ffd23f", textShadow: "none", fontWeight: "800", fontSize: "16px", color: "#111", padding: "4px 10px" }, "Motion graphics · word pops in"],
+  };
+  document.querySelectorAll("#styles div").forEach((d) => d.onclick = () => {
+    document.querySelectorAll("#styles div").forEach((x) => x.classList.toggle("on", x === d));
+    Object.assign($("st-cap").style, ST[d.dataset.st][0]);
+    $("st-meta").textContent = ST[d.dataset.st][1];
+  });
+</script>
+</body>
+</html>

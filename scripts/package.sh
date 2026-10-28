@@ -7,7 +7,7 @@
 # (Attach a copy named QuickCaps-Premiere-2022-2025.zxp too, so links to
 # the old name keep working.)
 #
-# File names carry no version number, so the website's "latest release"
+# File names carry no version number, so "latest release"
 # download links keep working. The version lives in the GitHub release tag.
 #
 # The optional 2026-only version (.ccx) is made in the UXP Developer Tool:

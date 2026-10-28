@@ -8,15 +8,14 @@ speech. Fix anything you like, then add them to your timeline. Powered by
 for the way we actually mix them.
 
 [**Download**](https://github.com/dedkul/quickcaps-adobe-plugin/releases/latest) ·
-[Website](https://dedkul.github.io/quickcaps-adobe-plugin/) ·
 [Follow @feat_ashish on X](https://x.com/feat_ashish) for updates and new features
 
 <p>
-  <img src="docs/img/panel-main.png" width="260" alt="QuickCaps main screen: caption source, spoken language, caption script, and pacing" />
+  <img src="screenshots/panel-main.png" width="260" alt="QuickCaps main screen: caption source, spoken language, caption script, and pacing" />
   &nbsp;
-  <img src="docs/img/panel-review.png" width="260" alt="Review screen: timed captions you can edit, split, merge, and search" />
+  <img src="screenshots/panel-review.png" width="260" alt="Review screen: timed captions you can edit, split, merge, and search" />
   &nbsp;
-  <img src="docs/img/panel-settings.png" width="260" alt="Settings: paste your Sarvam API key and QuickCaps checks it" />
+  <img src="screenshots/panel-settings.png" width="260" alt="Settings: paste your Sarvam API key and QuickCaps checks it" />
 </p>
 
 ## What it does
@@ -145,7 +144,7 @@ Something else, or an idea for a feature? Message
 - `hosts/cep/`: the .zxp for Premiere Pro 2022 to 2026 (CEP and ExtendScript).
 - `presets/`: the audio export preset (WAV, mono, 16 kHz).
 - `scripts/`: build, local install, and packaging.
-- `docs/`: the website (GitHub Pages).
+- `screenshots/`: the images in this README.
 - `tests/`: run `node tests/core.test.js`.
 
 ### Build and load (Premiere 2026)
